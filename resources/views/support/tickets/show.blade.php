@@ -94,51 +94,95 @@
                 <div class="space-y-6">
                     @if ($isTechnical)
                         <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40">
-                            <h3 class="text-base font-semibold text-slate-100">Ações da TI</h3>
+                            <div class="flex flex-col gap-2">
+                                <h3 class="text-base font-semibold text-slate-100">Fluxo da TI</h3>
+                                <p class="text-sm text-slate-400">
+                                    {{ __('Escolha a próxima ação. Cada etapa registra data, hora e observação.') }}
+                                </p>
+                            </div>
 
-                            <div class="mt-4 space-y-3">
-                                @if ($canHandleCurrentArea && in_array($ticket->status, [\App\Models\Ticket::STATUS_OPEN, \App\Models\Ticket::STATUS_PENDING], true))
-                                    <form method="POST" action="{{ route('support.tickets.take', $ticket) }}" class="space-y-3">
-                                        @csrf
-                                        <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Observação da assunção"></textarea>
-                                        <x-primary-button type="submit">{{ __('Assumir análise') }}</x-primary-button>
-                                    </form>
-                                @endif
+                            @if ($canHandleCurrentArea)
+                                <div class="mt-5 space-y-3">
+                                    @if (in_array($ticket->status, [\App\Models\Ticket::STATUS_OPEN, \App\Models\Ticket::STATUS_PENDING], true))
+                                        <details class="group rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-100">Assumir ticket</p>
+                                                    <p class="mt-1 text-sm text-slate-400">Você passa a ser o responsável da área para esse chamado.</p>
+                                                </div>
+                                                <span class="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold text-slate-300">Pronto para iniciar</span>
+                                            </summary>
+                                            <form method="POST" action="{{ route('support.tickets.take', $ticket) }}" class="mt-4 space-y-3">
+                                                @csrf
+                                                <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Observação opcional"></textarea>
+                                                <x-primary-button type="submit">{{ __('Assumir') }}</x-primary-button>
+                                            </form>
+                                        </details>
+                                    @endif
 
-                                @if ($canHandleCurrentArea && in_array($ticket->status, [\App\Models\Ticket::STATUS_ANALYSIS, \App\Models\Ticket::STATUS_OPEN, \App\Models\Ticket::STATUS_PENDING], true))
-                                    <form method="POST" action="{{ route('support.tickets.work', $ticket) }}" class="space-y-3">
-                                        @csrf
-                                        <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="O que foi iniciado"></textarea>
-                                        <x-primary-button type="submit">{{ __('Mover para tratativas') }}</x-primary-button>
-                                    </form>
-                                @endif
+                                    @if (in_array($ticket->status, [\App\Models\Ticket::STATUS_ANALYSIS, \App\Models\Ticket::STATUS_OPEN, \App\Models\Ticket::STATUS_PENDING], true))
+                                        <details class="group rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-100">Iniciar tratativas</p>
+                                                    <p class="mt-1 text-sm text-slate-400">Use quando o trabalho já começou e o ticket está em andamento.</p>
+                                                </div>
+                                                <span class="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold text-slate-300">Em andamento</span>
+                                            </summary>
+                                            <form method="POST" action="{{ route('support.tickets.work', $ticket) }}" class="mt-4 space-y-3">
+                                                @csrf
+                                                <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="O que foi feito até agora?"></textarea>
+                                                <x-primary-button type="submit">{{ __('Mover para tratativas') }}</x-primary-button>
+                                            </form>
+                                        </details>
+                                    @endif
 
-                                @if ($canHandleCurrentArea && in_array($ticket->status, [\App\Models\Ticket::STATUS_ANALYSIS, \App\Models\Ticket::STATUS_PROGRESS, \App\Models\Ticket::STATUS_PENDING, \App\Models\Ticket::STATUS_OPEN], true))
-                                    <form method="POST" action="{{ route('support.tickets.transfer', $ticket) }}" class="space-y-3">
-                                        @csrf
-                                        <select name="target_area_id" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" required>
-                                            @foreach ($areas as $area)
-                                                <option value="{{ $area->id }}" @selected($ticket->area_id === $area->id)>{{ $area->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Motivo do encaminhamento" required></textarea>
-                                        <x-primary-button type="submit">{{ __('Encaminhar área') }}</x-primary-button>
-                                    </form>
-                                @endif
+                                    @if (in_array($ticket->status, [\App\Models\Ticket::STATUS_ANALYSIS, \App\Models\Ticket::STATUS_PROGRESS, \App\Models\Ticket::STATUS_PENDING, \App\Models\Ticket::STATUS_OPEN], true))
+                                        <details class="group rounded-2xl border border-slate-800 bg-slate-950/40 p-4">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-100">Encaminhar para outra área</p>
+                                                    <p class="mt-1 text-sm text-slate-400">Passe o ticket para outra equipe quando a solução depender dela.</p>
+                                                </div>
+                                                <span class="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold text-slate-300">Reencaminhar</span>
+                                            </summary>
+                                            <form method="POST" action="{{ route('support.tickets.transfer', $ticket) }}" class="mt-4 space-y-3">
+                                                @csrf
+                                                <label class="block">
+                                                    <span class="mb-1 block text-sm font-medium text-slate-200">Nova área</span>
+                                                    <select name="target_area_id" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" required>
+                                                        @foreach ($areas as $area)
+                                                            <option value="{{ $area->id }}" @selected($ticket->area_id === $area->id)>{{ $area->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </label>
+                                                <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Motivo e contexto do encaminhamento" required></textarea>
+                                                <x-primary-button type="submit">{{ __('Encaminhar') }}</x-primary-button>
+                                            </form>
+                                        </details>
+                                    @endif
 
-                                @if (! in_array($ticket->status, [\App\Models\Ticket::STATUS_RESOLVED, \App\Models\Ticket::STATUS_CLOSED], true))
-                                    <form method="POST" action="{{ route('support.tickets.resolve', $ticket) }}" class="space-y-3">
-                                        @csrf
-                                        <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Resumo da solução" required></textarea>
-                                        <x-primary-button type="submit">{{ __('Marcar como solucionado') }}</x-primary-button>
-                                    </form>
-                                @endif
-
-                                @if (! $canHandleCurrentArea)
-                                    <div class="rounded-xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                                        {{ __('Você é TI, mas não possui acesso a esta área. As ações operacionais ficam ocultas até você receber a permissão correspondente.') }}
-                                    </div>
-                                @endif
+                                    @if (! in_array($ticket->status, [\App\Models\Ticket::STATUS_RESOLVED, \App\Models\Ticket::STATUS_CLOSED], true))
+                                        <details class="group rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between gap-4">
+                                                <div>
+                                                    <p class="text-sm font-semibold text-emerald-50">Marcar como solucionado</p>
+                                                    <p class="mt-1 text-sm text-emerald-100/80">Use quando o problema estiver resolvido e puder voltar ao solicitante.</p>
+                                                </div>
+                                                <span class="rounded-full border border-emerald-300/20 px-3 py-1 text-xs font-semibold text-emerald-50">Finalizar</span>
+                                            </summary>
+                                            <form method="POST" action="{{ route('support.tickets.resolve', $ticket) }}" class="mt-4 space-y-3">
+                                                @csrf
+                                                <textarea name="note" rows="3" class="block w-full rounded-md border-emerald-300/30 bg-slate-950/80 text-slate-100 shadow-sm focus:border-emerald-300 focus:ring-emerald-300" placeholder="Resumo da solução" required></textarea>
+                                                <x-primary-button type="submit">{{ __('Marcar como solucionado') }}</x-primary-button>
+                                            </form>
+                                        </details>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="mt-5 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                                    {{ __('Você é TI, mas não possui vínculo com esta área. As ações de operação ficam ocultas até que a área seja associada ao seu usuário.') }}
+                                </div>
                             </div>
                         </div>
                     @endif
