@@ -23,7 +23,7 @@
             <!-- Page Heading -->
             @isset($header)
                 <header class="border-b border-slate-800 bg-slate-900/80 shadow-lg shadow-slate-950/40 backdrop-blur">
-                    <div class="mx-auto w-full max-w-[96rem] px-4 py-6 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
+                    <div class="w-full px-4 py-6 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
                         {{ $header }}
                     </div>
                 </header>

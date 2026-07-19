@@ -1,0 +1,105 @@
+<?php
+
+return [
+    'areas' => [
+        'service_desk' => [
+            'label' => 'Service Desk',
+            'description' => 'Triagem inicial e atendimento de primeiro nível.',
+        ],
+        'systems' => [
+            'label' => 'Sistemas',
+            'description' => 'Demandas funcionais e integrações de sistemas.',
+        ],
+        'development' => [
+            'label' => 'Desenvolvimento',
+            'description' => 'Correções, evoluções e ajustes em código.',
+        ],
+        'infrastructure' => [
+            'label' => 'Infraestrutura',
+            'description' => 'Rede, servidores, acessos e ambiente.',
+        ],
+    ],
+
+    'routing' => [
+        'default_area' => 'service_desk',
+        'keywords' => [
+            'service_desk' => [
+                'acesso',
+                'senha',
+                'login',
+                'logar',
+                'impressora',
+                'email',
+                'e-mail',
+                'cadastro',
+                'suporte',
+                'chamado',
+                'erro simples',
+            ],
+            'systems' => [
+                'sistema',
+                'erp',
+                'módulo',
+                'modulo',
+                'tela',
+                'relatório',
+                'relatorio',
+                'funcional',
+                'cadastro',
+                'integração',
+                'integracao',
+            ],
+            'development' => [
+                'bug',
+                'código',
+                'codigo',
+                'deploy',
+                'release',
+                'ajuste',
+                'feature',
+                'script',
+                'api',
+                'exception',
+                'stack trace',
+            ],
+            'infrastructure' => [
+                'rede',
+                'internet',
+                'vpn',
+                'servidor',
+                'backup',
+                'firewall',
+                'wi-fi',
+                'wifi',
+                'dns',
+                'roteador',
+                'switch',
+                'storage',
+                'ldap',
+                'active directory',
+                'dominio',
+            ],
+        ],
+    ],
+
+    'statuses' => [
+        'open' => 'Aberto',
+        'analysis' => 'Em Análise',
+        'progress' => 'Em tratativas',
+        'pending' => 'Pendente',
+        'resolved' => 'Finalizado',
+        'closed' => 'Fechado',
+    ],
+
+    'event_types' => [
+        'created' => 'Ticket aberto',
+        'comment' => 'Nova informação',
+        'assigned' => 'Assumido pela TI',
+        'transferred' => 'Encaminhado para outra área',
+        'analysis' => 'Em análise',
+        'progress' => 'Em tratativas',
+        'resolved' => 'Marcado como solucionado',
+        'pending' => 'Devolvido para a TI',
+        'closed' => 'Fechado pelo usuário',
+    ],
+];

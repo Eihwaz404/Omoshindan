@@ -1,6 +1,6 @@
-<nav x-data="{ open: false }" class="relative z-50 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur">
+<nav x-data="{ open: false, accessOpen: false, supportOpen: false }" class="relative z-50 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur">
     <!-- Primary Navigation Menu -->
-    <div class="mx-auto w-full max-w-[96rem] px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
+    <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
@@ -16,6 +16,66 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    <div class="relative flex items-center sm:-my-px" @click.outside="supportOpen = false">
+                        <button
+                            type="button"
+                            @click="supportOpen = !supportOpen"
+                            class="inline-flex h-full items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-slate-400 transition duration-150 ease-in-out hover:border-slate-500 hover:text-slate-100 focus:border-slate-500 focus:text-slate-100 focus:outline-none"
+                        >
+                            {{ __('Suporte') }}
+                            <svg class="ms-1 h-4 w-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+
+                        <div
+                            x-cloak
+                            x-show="supportOpen"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute left-0 top-full z-[60] mt-2 w-48 overflow-hidden rounded-md border border-slate-800 bg-slate-900 shadow-xl shadow-slate-950/60"
+                        >
+                            <a href="{{ route('support.tickets.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                                {{ __('Tickets') }}
+                            </a>
+                        </div>
+                    </div>
+
+                    @can('users.view')
+                        <div class="relative flex items-center sm:-my-px" @click.outside="accessOpen = false">
+                            <button
+                                type="button"
+                                @click="accessOpen = !accessOpen"
+                                class="inline-flex h-full items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-slate-400 transition duration-150 ease-in-out hover:border-slate-500 hover:text-slate-100 focus:border-slate-500 focus:text-slate-100 focus:outline-none"
+                            >
+                                {{ __('Acesso') }}
+                                <svg class="ms-1 h-4 w-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <div
+                                x-cloak
+                                x-show="accessOpen"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute left-0 top-full z-[60] mt-2 w-48 overflow-hidden rounded-md border border-slate-800 bg-slate-900 shadow-xl shadow-slate-950/60"
+                            >
+                                <a href="{{ route('access.users.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                                    {{ __('Usuários') }}
+                                </a>
+                            </div>
+                        </div>
+                    @endcan
                 </div>
             </div>
 
@@ -91,6 +151,12 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @can('users.view')
+                <x-responsive-nav-link :href="route('access.users.index')" :active="request()->routeIs('access.users.*')">
+                    {{ __('Usuários') }}
+                </x-responsive-nav-link>
+            @endcan
         </div>
 
         <!-- Responsive Settings Options -->
