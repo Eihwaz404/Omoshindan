@@ -85,7 +85,6 @@ return [
     'statuses' => [
         'open' => 'Aberto',
         'analysis' => 'Em Análise',
-        'progress' => 'Em tratativas',
         'pending' => 'Pendente',
         'resolved' => 'Finalizado',
         'closed' => 'Fechado',
@@ -97,7 +96,7 @@ return [
         'assigned' => 'Assumido pela TI',
         'transferred' => 'Encaminhado para outra área',
         'analysis' => 'Em análise',
-        'progress' => 'Em tratativas',
+        'requested_info' => 'Solicitação de informações',
         'resolved' => 'Marcado como solucionado',
         'pending' => 'Devolvido para a TI',
         'closed' => 'Fechado pelo usuário',

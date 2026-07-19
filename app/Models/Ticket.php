@@ -13,7 +13,6 @@ class Ticket extends Model
 
     public const STATUS_OPEN = 'open';
     public const STATUS_ANALYSIS = 'analysis';
-    public const STATUS_PROGRESS = 'progress';
     public const STATUS_PENDING = 'pending';
     public const STATUS_RESOLVED = 'resolved';
     public const STATUS_CLOSED = 'closed';
@@ -71,7 +70,11 @@ class Ticket extends Model
 
     public function getReferenceAttribute(): string
     {
-        return 'TK-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+        $digits = (string) $this->id;
+        $paddedLength = max(9, (int) ceil(strlen($digits) / 3) * 3);
+        $paddedDigits = str_pad($digits, $paddedLength, '0', STR_PAD_LEFT);
+
+        return 'TK-'.strrev(trim(chunk_split(strrev($paddedDigits), 3, '.'), '.'));
     }
 
     public function getStatusLabelAttribute(): string

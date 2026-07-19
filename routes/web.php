@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\DatabaseController as AdminDatabaseController;
 use App\Http\Controllers\Access\UserController as AccessUserController;
 use App\Http\Controllers\Support\AreaController as SupportAreaController;
 use App\Http\Controllers\Support\TicketController as SupportTicketController;
@@ -18,6 +19,11 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::prefix('administrativo/banco-de-dados')->name('admin.database.')->middleware('can:database.manage')->group(function () {
+        Route::get('/', [AdminDatabaseController::class, 'index'])->name('index');
+        Route::post('/sanitizar', [AdminDatabaseController::class, 'sanitize'])->name('sanitize');
+    });
+
     Route::prefix('suporte/tickets')->name('support.tickets.')->group(function () {
         Route::get('/', [SupportTicketController::class, 'index'])->name('index');
         Route::get('/novo', [SupportTicketController::class, 'create'])->name('create');
@@ -25,7 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{ticket}', [SupportTicketController::class, 'show'])->name('show');
         Route::post('/{ticket}/comentarios', [SupportTicketController::class, 'comment'])->name('comment');
         Route::post('/{ticket}/assumir', [SupportTicketController::class, 'take'])->name('take');
-        Route::post('/{ticket}/tratar', [SupportTicketController::class, 'work'])->name('work');
+        Route::post('/{ticket}/solicitar-informacoes', [SupportTicketController::class, 'requestInfo'])->name('request-info');
         Route::post('/{ticket}/encaminhar', [SupportTicketController::class, 'transfer'])->name('transfer');
         Route::post('/{ticket}/finalizar', [SupportTicketController::class, 'resolve'])->name('resolve');
         Route::post('/{ticket}/devolver', [SupportTicketController::class, 'returnToSupport'])->name('return');

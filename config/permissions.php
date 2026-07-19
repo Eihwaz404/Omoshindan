@@ -47,5 +47,14 @@ return [
                 ],
             ],
         ],
+        'Administrativo' => [
+            'label' => 'Administrativo',
+            'permissions' => [
+                'database.manage' => [
+                    'label' => 'Gerenciar banco de dados',
+                    'description' => 'Permite acessar a tela administrativa e sanitizar tabelas controladas.',
+                ],
+            ],
+        ],
     ],
 ];

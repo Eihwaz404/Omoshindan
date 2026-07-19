@@ -43,7 +43,7 @@ class TicketWorkflowTest extends TestCase
         $this->assertNull($ticket->assigned_to_id);
     }
 
-    public function test_requester_can_return_resolved_ticket_and_clear_resolution_timestamp(): void
+    public function test_requester_can_return_ticket_to_the_same_technical_user(): void
     {
         $area = $this->createArea('service_desk', 'Service Desk');
         $requester = User::factory()->create();
@@ -63,16 +63,16 @@ class TicketWorkflowTest extends TestCase
         $response = $this->actingAs($requester)
             ->from(route('support.tickets.show', $ticket, false))
             ->post(route('support.tickets.return', $ticket), [
-                'note' => 'Ainda preciso de uma correção.',
-            ]);
+            'note' => 'Ainda preciso de uma correção.',
+        ]);
 
         $response->assertRedirect(route('support.tickets.show', $ticket, false));
         $response->assertSessionHas('status', __('Ticket devolvido para a TI.'));
 
         $ticket->refresh();
 
-        $this->assertSame(Ticket::STATUS_PENDING, $ticket->status);
-        $this->assertNull($ticket->assigned_to_id);
+        $this->assertSame(Ticket::STATUS_ANALYSIS, $ticket->status);
+        $this->assertSame($support->id, $ticket->assigned_to_id);
         $this->assertNull($ticket->resolved_at);
     }
 
@@ -123,6 +123,106 @@ class TicketWorkflowTest extends TestCase
             ]);
 
         $response->assertForbidden();
+    }
+
+    public function test_technical_user_can_assume_ticket_and_move_it_to_analysis(): void
+    {
+        $area = $this->createArea('service_desk', 'Service Desk');
+        $requester = User::factory()->create();
+        $support = User::factory()->create([
+            'role' => 'support',
+        ]);
+        $area->users()->attach($support);
+
+        $ticket = $this->createTicket($requester, [
+            'area_id' => $area->id,
+            'current_area' => $area->slug,
+            'status' => Ticket::STATUS_OPEN,
+        ]);
+
+        $this->actingAs($support)->post(route('support.tickets.take', $ticket), [
+            'note' => 'Assumindo o ticket.',
+        ])->assertRedirect();
+
+        $ticket->refresh();
+
+        $this->assertSame(Ticket::STATUS_ANALYSIS, $ticket->status);
+        $this->assertSame($support->id, $ticket->assigned_to_id);
+    }
+
+    public function test_technical_user_can_request_information_and_get_ticket_back_from_requester(): void
+    {
+        $area = $this->createArea('service_desk', 'Service Desk');
+        $requester = User::factory()->create();
+        $support = User::factory()->create([
+            'role' => 'support',
+        ]);
+        $area->users()->attach($support);
+
+        $ticket = $this->createTicket($requester, [
+            'area_id' => $area->id,
+            'current_area' => $area->slug,
+            'assigned_to_id' => $support->id,
+            'status' => Ticket::STATUS_ANALYSIS,
+        ]);
+
+        $this->actingAs($support)
+            ->from(route('support.tickets.show', $ticket, false))
+            ->post(route('support.tickets.request-info', $ticket), [
+                'note' => 'Preciso do número de série do equipamento.',
+            ])
+            ->assertRedirect(route('support.tickets.show', $ticket, false));
+
+        $ticket->refresh();
+
+        $this->assertSame(Ticket::STATUS_PENDING, $ticket->status);
+        $this->assertSame($support->id, $ticket->assigned_to_id);
+
+        $this->actingAs($requester)
+            ->from(route('support.tickets.show', $ticket, false))
+            ->post(route('support.tickets.return', $ticket), [
+                'note' => 'Segue o número de série solicitado.',
+            ])
+            ->assertRedirect(route('support.tickets.show', $ticket, false));
+
+        $ticket->refresh();
+
+        $this->assertSame(Ticket::STATUS_ANALYSIS, $ticket->status);
+        $this->assertSame($support->id, $ticket->assigned_to_id);
+    }
+
+    public function test_transfer_clears_assignee_and_returns_ticket_to_pending_queue(): void
+    {
+        $serviceDesk = $this->createArea('service_desk', 'Service Desk');
+        $infrastructure = $this->createArea('infrastructure', 'Infraestrutura');
+
+        $requester = User::factory()->create();
+        $support = User::factory()->create([
+            'role' => 'support',
+        ]);
+        $serviceDesk->users()->attach($support);
+
+        $ticket = $this->createTicket($requester, [
+            'area_id' => $serviceDesk->id,
+            'current_area' => $serviceDesk->slug,
+            'assigned_to_id' => $support->id,
+            'status' => Ticket::STATUS_ANALYSIS,
+        ]);
+
+        $response = $this->actingAs($support)
+            ->from(route('support.tickets.show', $ticket, false))
+            ->post(route('support.tickets.transfer', $ticket), [
+                'target_area_id' => $infrastructure->id,
+                'note' => 'Encaminhando para infraestrutura.',
+            ]);
+
+        $response->assertRedirect(route('support.tickets.show', $ticket, false));
+
+        $ticket->refresh();
+
+        $this->assertSame($infrastructure->id, $ticket->area_id);
+        $this->assertSame(Ticket::STATUS_PENDING, $ticket->status);
+        $this->assertNull($ticket->assigned_to_id);
     }
 
     private function createArea(string $slug, string $name): SupportArea

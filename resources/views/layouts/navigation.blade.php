@@ -1,4 +1,4 @@
-<nav x-data="{ open: false, accessOpen: false, supportOpen: false }" class="relative z-50 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur">
+<nav x-data="{ open: false, accessOpen: false, supportOpen: false, adminOpen: false }" class="relative z-50 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur">
     <!-- Primary Navigation Menu -->
     <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
         <div class="flex justify-between h-16">
@@ -50,6 +50,37 @@
                             @endcan
                         </div>
                     </div>
+
+                    @can('database.manage')
+                        <div class="relative flex items-center sm:-my-px" @click.outside="adminOpen = false">
+                            <button
+                                type="button"
+                                @click="adminOpen = !adminOpen"
+                                class="inline-flex h-full items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-slate-400 transition duration-150 ease-in-out hover:border-slate-500 hover:text-slate-100 focus:border-slate-500 focus:text-slate-100 focus:outline-none"
+                            >
+                                {{ __('Administrativo') }}
+                                <svg class="ms-1 h-4 w-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <div
+                                x-cloak
+                                x-show="adminOpen"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute left-0 top-full z-[60] mt-2 w-52 overflow-hidden rounded-md border border-slate-800 bg-slate-900 shadow-xl shadow-slate-950/60"
+                            >
+                                <a href="{{ route('admin.database.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                                    {{ __('Banco de dados') }}
+                                </a>
+                            </div>
+                        </div>
+                    @endcan
 
                     @can('users.view')
                         <div class="relative flex items-center sm:-my-px" @click.outside="accessOpen = false">
@@ -166,6 +197,12 @@
             @can('support.areas.manage')
                 <x-responsive-nav-link :href="route('support.areas.index')" :active="request()->routeIs('support.areas.*')">
                     {{ __('Áreas') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('database.manage')
+                <x-responsive-nav-link :href="route('admin.database.index')" :active="request()->routeIs('admin.database.*')">
+                    {{ __('Banco de dados') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

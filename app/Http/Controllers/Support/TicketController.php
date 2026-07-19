@@ -107,6 +107,7 @@ class TicketController extends Controller
             'areas' => SupportArea::query()->active()->orderBy('name')->get(),
             'statuses' => config('support.statuses', []),
             'isTechnical' => $request->user()->isTechnical(),
+            'isAssignedToCurrentUser' => $ticket->assigned_to_id === $request->user()->id,
             'canHandleCurrentArea' => $request->user()->canWorkSupportArea($ticket->area),
             'isRequester' => $ticket->requester_id === $request->user()->id,
         ]);
@@ -134,6 +135,7 @@ class TicketController extends Controller
     {
         $this->ensureTechnical($request, $ticket);
         $this->ensureAreaAccess($request->user(), $ticket->area);
+        abort_unless($ticket->assigned_to_id === null, 403);
         $this->ensureTicketStatus($ticket, [
             Ticket::STATUS_OPEN,
             Ticket::STATUS_PENDING,
@@ -145,7 +147,7 @@ class TicketController extends Controller
             ticket: $ticket,
             actorId: $request->user()->id,
             type: 'assigned',
-            note: $request->string('note') ?: __('Ticket assumido para análise.'),
+            note: $request->string('note') ?: __('Ticket assumido e movido para análise.'),
             fromStatus: $fromStatus,
             toStatus: Ticket::STATUS_ANALYSIS
         );
@@ -158,35 +160,6 @@ class TicketController extends Controller
         return back()->with('status', __('Ticket assumido com sucesso.'));
     }
 
-    public function work(Request $request, Ticket $ticket): RedirectResponse
-    {
-        $this->ensureTechnical($request, $ticket);
-        $this->ensureAreaAccess($request->user(), $ticket->area);
-        $this->ensureTicketStatus($ticket, [
-            Ticket::STATUS_OPEN,
-            Ticket::STATUS_ANALYSIS,
-            Ticket::STATUS_PENDING,
-        ], __('Este ticket não pode ser movido para tratativas neste estado.'));
-
-        $fromStatus = $ticket->status;
-
-        $this->recordEvent(
-            ticket: $ticket,
-            actorId: $request->user()->id,
-            type: 'progress',
-            note: $request->string('note') ?: __('Ticket em tratativas.'),
-            fromStatus: $fromStatus,
-            toStatus: Ticket::STATUS_PROGRESS
-        );
-
-        $ticket->forceFill([
-            'assigned_to_id' => $request->user()->id,
-            'status' => Ticket::STATUS_PROGRESS,
-        ])->save();
-
-        return back()->with('status', __('Ticket movido para tratativas.'));
-    }
-
     public function transfer(Request $request, Ticket $ticket): RedirectResponse
     {
         $this->ensureTechnical($request, $ticket);
@@ -194,7 +167,6 @@ class TicketController extends Controller
         $this->ensureTicketStatus($ticket, [
             Ticket::STATUS_OPEN,
             Ticket::STATUS_ANALYSIS,
-            Ticket::STATUS_PROGRESS,
             Ticket::STATUS_PENDING,
         ], __('Este ticket não pode ser encaminhado neste estado.'));
 
@@ -214,8 +186,8 @@ class TicketController extends Controller
         $ticket->forceFill([
             'area_id' => $targetArea->id,
             'current_area' => $targetArea->slug,
-            'assigned_to_id' => $request->user()->id,
-            'status' => $ticket->status === Ticket::STATUS_OPEN ? Ticket::STATUS_ANALYSIS : $ticket->status,
+            'assigned_to_id' => null,
+            'status' => Ticket::STATUS_PENDING,
         ])->save();
 
         $this->recordEvent(
@@ -224,7 +196,7 @@ class TicketController extends Controller
             type: 'transferred',
             note: $data['note'],
             fromStatus: $previousStatus,
-            toStatus: $ticket->status,
+            toStatus: Ticket::STATUS_PENDING,
             fromAreaId: $previousArea?->id,
             toAreaId: $targetArea->id,
             fromArea: $previousArea?->slug,
@@ -234,13 +206,43 @@ class TicketController extends Controller
         return back()->with('status', __('Ticket encaminhado para outra área.'));
     }
 
+    public function requestInfo(Request $request, Ticket $ticket): RedirectResponse
+    {
+        $this->ensureTechnical($request, $ticket);
+        $this->ensureAreaAccess($request->user(), $ticket->area);
+        abort_unless($ticket->assigned_to_id === $request->user()->id, 403);
+        $this->ensureTicketStatus($ticket, [
+            Ticket::STATUS_ANALYSIS,
+        ], __('Este ticket não pode solicitar informações neste estado.'));
+
+        $data = $request->validate([
+            'note' => ['required', 'string', 'min:3'],
+        ]);
+
+        $fromStatus = $ticket->status;
+
+        $ticket->forceFill([
+            'status' => Ticket::STATUS_PENDING,
+        ])->save();
+
+        $this->recordEvent(
+            ticket: $ticket,
+            actorId: $request->user()->id,
+            type: 'requested_info',
+            note: $data['note'],
+            fromStatus: $fromStatus,
+            toStatus: Ticket::STATUS_PENDING
+        );
+
+        return back()->with('status', __('Ticket devolvido ao solicitante para complementação.'));
+    }
+
     public function resolve(Request $request, Ticket $ticket): RedirectResponse
     {
         $this->ensureTechnical($request, $ticket);
         $this->ensureTicketStatus($ticket, [
             Ticket::STATUS_OPEN,
             Ticket::STATUS_ANALYSIS,
-            Ticket::STATUS_PROGRESS,
             Ticket::STATUS_PENDING,
         ], __('Este ticket não pode ser solucionado neste estado.'));
 
@@ -271,8 +273,10 @@ class TicketController extends Controller
     {
         $this->ensureRequester($request, $ticket);
         $this->ensureTicketStatus($ticket, [
+            Ticket::STATUS_PENDING,
             Ticket::STATUS_RESOLVED,
-        ], __('Somente tickets solucionados podem ser devolvidos para a TI.'));
+        ], __('Somente tickets finalizados ou aguardando informações podem ser devolvidos para a TI.'));
+        abort_unless($ticket->assigned_to_id !== null, 403);
 
         $data = $request->validate([
             'note' => ['required', 'string', 'min:3'],
@@ -281,8 +285,7 @@ class TicketController extends Controller
         $fromStatus = $ticket->status;
 
         $ticket->forceFill([
-            'status' => Ticket::STATUS_PENDING,
-            'assigned_to_id' => null,
+            'status' => Ticket::STATUS_ANALYSIS,
             'resolved_at' => null,
         ])->save();
 
@@ -292,7 +295,7 @@ class TicketController extends Controller
             type: 'pending',
             note: $data['note'],
             fromStatus: $fromStatus,
-            toStatus: Ticket::STATUS_PENDING
+            toStatus: Ticket::STATUS_ANALYSIS
         );
 
         return back()->with('status', __('Ticket devolvido para a TI.'));
