@@ -41,21 +41,9 @@ return [
         'Suporte' => [
             'label' => 'Suporte',
             'permissions' => [
-                'support.areas.service_desk' => [
-                    'label' => 'Atender Service Desk',
-                    'description' => 'Permite assumir e trabalhar tickets direcionados para Service Desk.',
-                ],
-                'support.areas.systems' => [
-                    'label' => 'Atender Sistemas',
-                    'description' => 'Permite assumir e trabalhar tickets direcionados para Sistemas.',
-                ],
-                'support.areas.development' => [
-                    'label' => 'Atender Desenvolvimento',
-                    'description' => 'Permite assumir e trabalhar tickets direcionados para Desenvolvimento.',
-                ],
-                'support.areas.infrastructure' => [
-                    'label' => 'Atender Infraestrutura',
-                    'description' => 'Permite assumir e trabalhar tickets direcionados para Infraestrutura.',
+                'support.areas.manage' => [
+                    'label' => 'Gerenciar áreas de suporte',
+                    'description' => 'Permite cadastrar, editar e vincular usuários às áreas de suporte.',
                 ],
             ],
         ],

@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -63,12 +64,32 @@ class User extends Authenticatable
     /**
      * Determine whether the user can work a specific support area.
      */
-    public function canWorkSupportArea(string $area): bool
+    public function canWorkSupportArea(SupportArea|int|string $area): bool
     {
         if (! $this->isTechnical()) {
             return false;
         }
 
-        return $this->hasPermission('support.areas.'.$area);
+        if (in_array($this->role, ['super_admin', 'admin'], true)) {
+            return true;
+        }
+
+        $areaId = $area instanceof SupportArea
+            ? $area->id
+            : (is_numeric($area) ? (int) $area : SupportArea::query()->where('slug', $area)->value('id'));
+
+        if (! $areaId) {
+            return false;
+        }
+
+        return $this->supportAreas()->whereKey($areaId)->exists();
+    }
+
+    /**
+     * Areas the user is assigned to.
+     */
+    public function supportAreas(): BelongsToMany
+    {
+        return $this->belongsToMany(SupportArea::class, 'support_area_user', 'user_id', 'support_area_id')->withTimestamps();
     }
 }

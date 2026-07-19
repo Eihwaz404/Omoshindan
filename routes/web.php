@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Access\UserController as AccessUserController;
+use App\Http\Controllers\Support\AreaController as SupportAreaController;
 use App\Http\Controllers\Support\TicketController as SupportTicketController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{ticket}/finalizar', [SupportTicketController::class, 'resolve'])->name('resolve');
         Route::post('/{ticket}/devolver', [SupportTicketController::class, 'returnToSupport'])->name('return');
         Route::post('/{ticket}/fechar', [SupportTicketController::class, 'close'])->name('close');
+    });
+
+    Route::prefix('suporte/areas')->name('support.areas.')->middleware('can:support.areas.manage')->group(function () {
+        Route::get('/', [SupportAreaController::class, 'index'])->name('index');
+        Route::get('/nova', [SupportAreaController::class, 'create'])->name('create');
+        Route::post('/', [SupportAreaController::class, 'store'])->name('store');
+        Route::get('/{area}/editar', [SupportAreaController::class, 'edit'])->name('edit');
+        Route::put('/{area}', [SupportAreaController::class, 'update'])->name('update');
+        Route::delete('/{area}', [SupportAreaController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('acesso/usuarios')->name('access.users.')->group(function () {

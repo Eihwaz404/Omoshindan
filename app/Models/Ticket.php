@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
@@ -24,6 +23,7 @@ class Ticket extends Model
         'description',
         'requester_id',
         'assigned_to_id',
+        'area_id',
         'current_area',
         'status',
         'resolved_at',
@@ -43,6 +43,11 @@ class Ticket extends Model
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to_id');
+    }
+
+    public function area(): BelongsTo
+    {
+        return $this->belongsTo(SupportArea::class, 'area_id');
     }
 
     public function events(): HasMany
@@ -76,42 +81,14 @@ class Ticket extends Model
 
     public function getAreaLabelAttribute(): string
     {
-        return config('support.areas.'.$this->current_area.'.label', $this->current_area ?? '-');
+        return $this->area?->name ?? $this->current_area ?? '-';
     }
 
     /**
      * Infer the most likely support area based on the ticket text.
      */
-    public static function detectArea(string $subject, string $description): string
+    public static function detectArea(string $subject, string $description): ?SupportArea
     {
-        $defaultArea = config('support.routing.default_area', array_key_first(config('support.areas', [])));
-        $keywords = config('support.routing.keywords', []);
-        $text = static::normalizeRoutingText($subject.' '.$description);
-
-        $bestArea = $defaultArea;
-        $bestScore = 0;
-
-        foreach ($keywords as $area => $areaKeywords) {
-            $score = 0;
-
-            foreach ((array) $areaKeywords as $keyword) {
-                $score += substr_count($text, static::normalizeRoutingText((string) $keyword));
-            }
-
-            if ($score > $bestScore) {
-                $bestScore = $score;
-                $bestArea = $area;
-            }
-        }
-
-        return $bestArea;
-    }
-
-    private static function normalizeRoutingText(string $value): string
-    {
-        $value = Str::lower($value);
-        $value = preg_replace('/[^a-z0-9]+/u', ' ', $value) ?? $value;
-
-        return trim($value);
+        return SupportArea::detectFromText($subject, $description);
     }
 }

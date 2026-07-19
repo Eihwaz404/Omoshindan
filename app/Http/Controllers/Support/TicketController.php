@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Support;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Support\StoreTicketRequest;
+use App\Models\SupportArea;
 use App\Models\Ticket;
 use App\Models\TicketEvent;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -20,10 +22,10 @@ class TicketController extends Controller
         $user = $request->user();
 
         $tickets = Ticket::query()
-            ->with(['requester', 'assignedTo'])
+            ->with(['requester', 'assignedTo', 'area'])
             ->visibleTo($user)
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->when($request->filled('area'), fn ($query) => $query->where('current_area', $request->string('area')))
+            ->when($request->filled('area'), fn ($query) => $query->where('area_id', $request->integer('area')))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = trim((string) $request->string('search'));
 
@@ -38,7 +40,7 @@ class TicketController extends Controller
 
         return view('support.tickets.index', [
             'tickets' => $tickets,
-            'areas' => config('support.areas', []),
+            'areas' => SupportArea::query()->active()->orderBy('name')->get(),
             'statuses' => config('support.statuses', []),
             'isTechnical' => $user->isTechnical(),
             'filters' => [
@@ -62,14 +64,17 @@ class TicketController extends Controller
     public function store(StoreTicketRequest $request): RedirectResponse
     {
         $ticket = DB::transaction(function () use ($request) {
+            $detectedArea = Ticket::detectArea(
+                (string) $request->string('subject'),
+                (string) $request->string('description'),
+            ) ?? SupportArea::query()->active()->firstOrFail();
+
             $ticket = Ticket::create([
                 'requester_id' => $request->user()->id,
                 'subject' => $request->string('subject'),
                 'description' => $request->string('description'),
-                'current_area' => Ticket::detectArea(
-                    (string) $request->string('subject'),
-                    (string) $request->string('description'),
-                ),
+                'area_id' => $detectedArea->id,
+                'current_area' => $detectedArea->slug,
                 'status' => Ticket::STATUS_OPEN,
             ]);
 
@@ -79,7 +84,8 @@ class TicketController extends Controller
                 type: 'created',
                 note: $request->string('description'),
                 toStatus: Ticket::STATUS_OPEN,
-                toArea: $ticket->current_area
+                toAreaId: $ticket->area_id,
+                toArea: $detectedArea->slug
             );
 
             return $ticket;
@@ -94,14 +100,14 @@ class TicketController extends Controller
     {
         abort_unless($ticket->isVisibleTo($request->user()), 403);
 
-        $ticket->load(['requester', 'assignedTo', 'events.actor']);
+        $ticket->load(['requester', 'assignedTo', 'area', 'events.actor', 'events.fromArea', 'events.toArea']);
 
         return view('support.tickets.show', [
             'ticket' => $ticket,
-            'areas' => config('support.areas', []),
+            'areas' => SupportArea::query()->active()->orderBy('name')->get(),
             'statuses' => config('support.statuses', []),
             'isTechnical' => $request->user()->isTechnical(),
-            'canHandleCurrentArea' => $request->user()->canWorkSupportArea($ticket->current_area),
+            'canHandleCurrentArea' => $request->user()->canWorkSupportArea($ticket->area),
             'isRequester' => $ticket->requester_id === $request->user()->id,
         ]);
     }
@@ -127,7 +133,7 @@ class TicketController extends Controller
     public function take(Request $request, Ticket $ticket): RedirectResponse
     {
         $this->ensureTechnical($request, $ticket);
-        $this->ensureAreaAccess($request->user(), $ticket->current_area);
+        $this->ensureAreaAccess($request->user(), $ticket->area);
         $this->ensureTicketStatus($ticket, [
             Ticket::STATUS_OPEN,
             Ticket::STATUS_PENDING,
@@ -155,7 +161,7 @@ class TicketController extends Controller
     public function work(Request $request, Ticket $ticket): RedirectResponse
     {
         $this->ensureTechnical($request, $ticket);
-        $this->ensureAreaAccess($request->user(), $ticket->current_area);
+        $this->ensureAreaAccess($request->user(), $ticket->area);
         $this->ensureTicketStatus($ticket, [
             Ticket::STATUS_OPEN,
             Ticket::STATUS_ANALYSIS,
@@ -184,7 +190,7 @@ class TicketController extends Controller
     public function transfer(Request $request, Ticket $ticket): RedirectResponse
     {
         $this->ensureTechnical($request, $ticket);
-        $this->ensureAreaAccess($request->user(), $ticket->current_area);
+        $this->ensureAreaAccess($request->user(), $ticket->area);
         $this->ensureTicketStatus($ticket, [
             Ticket::STATUS_OPEN,
             Ticket::STATUS_ANALYSIS,
@@ -193,15 +199,21 @@ class TicketController extends Controller
         ], __('Este ticket não pode ser encaminhado neste estado.'));
 
         $data = $request->validate([
-            'current_area' => ['required', 'string', 'in:'.implode(',', array_keys(config('support.areas', [])))],
+            'target_area_id' => [
+                'required',
+                'integer',
+                Rule::exists('support_areas', 'id')->where(fn ($query) => $query->where('is_active', true)),
+            ],
             'note' => ['required', 'string', 'min:3'],
         ]);
 
-        $previousArea = $ticket->current_area;
+        $previousArea = $ticket->area;
         $previousStatus = $ticket->status;
+        $targetArea = SupportArea::query()->findOrFail($data['target_area_id']);
 
         $ticket->forceFill([
-            'current_area' => $data['current_area'],
+            'area_id' => $targetArea->id,
+            'current_area' => $targetArea->slug,
             'assigned_to_id' => $request->user()->id,
             'status' => $ticket->status === Ticket::STATUS_OPEN ? Ticket::STATUS_ANALYSIS : $ticket->status,
         ])->save();
@@ -213,8 +225,10 @@ class TicketController extends Controller
             note: $data['note'],
             fromStatus: $previousStatus,
             toStatus: $ticket->status,
-            fromArea: $previousArea,
-            toArea: $data['current_area']
+            fromAreaId: $previousArea?->id,
+            toAreaId: $targetArea->id,
+            fromArea: $previousArea?->slug,
+            toArea: $targetArea->slug
         );
 
         return back()->with('status', __('Ticket encaminhado para outra área.'));
@@ -325,9 +339,9 @@ class TicketController extends Controller
         abort_unless($ticket->requester_id === $request->user()->id, 403);
     }
 
-    private function ensureAreaAccess(User $user, string $area): void
+    private function ensureAreaAccess(User $user, ?SupportArea $area): void
     {
-        abort_unless($user->canWorkSupportArea($area), 403);
+        abort_unless($area && $user->canWorkSupportArea($area), 403);
     }
 
     private function ensureTicketStatus(Ticket $ticket, array $allowedStatuses, string $message): void
@@ -348,6 +362,8 @@ class TicketController extends Controller
         ?string $toStatus = null,
         ?string $fromArea = null,
         ?string $toArea = null,
+        ?int $fromAreaId = null,
+        ?int $toAreaId = null,
     ): TicketEvent {
         $event = $ticket->events()->create([
             'actor_id' => $actorId,
@@ -357,6 +373,8 @@ class TicketController extends Controller
             'to_status' => $toStatus,
             'from_area' => $fromArea,
             'to_area' => $toArea,
+            'from_area_id' => $fromAreaId,
+            'to_area_id' => $toAreaId,
         ]);
 
         $ticket->touch();

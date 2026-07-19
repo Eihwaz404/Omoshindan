@@ -43,6 +43,11 @@
                             <a href="{{ route('support.tickets.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
                                 {{ __('Tickets') }}
                             </a>
+                            @can('support.areas.manage')
+                                <a href="{{ route('support.areas.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                                    {{ __('Áreas') }}
+                                </a>
+                            @endcan
                         </div>
                     </div>
 
@@ -155,6 +160,12 @@
             @can('users.view')
                 <x-responsive-nav-link :href="route('access.users.index')" :active="request()->routeIs('access.users.*')">
                     {{ __('Usuários') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('support.areas.manage')
+                <x-responsive-nav-link :href="route('support.areas.index')" :active="request()->routeIs('support.areas.*')">
+                    {{ __('Áreas') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

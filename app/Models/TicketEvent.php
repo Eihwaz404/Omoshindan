@@ -20,6 +20,8 @@ class TicketEvent extends Model
         'to_status',
         'from_area',
         'to_area',
+        'from_area_id',
+        'to_area_id',
         'note',
     ];
 
@@ -31,6 +33,16 @@ class TicketEvent extends Model
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');
+    }
+
+    public function fromArea(): BelongsTo
+    {
+        return $this->belongsTo(SupportArea::class, 'from_area_id');
+    }
+
+    public function toArea(): BelongsTo
+    {
+        return $this->belongsTo(SupportArea::class, 'to_area_id');
     }
 
     public function getTypeLabelAttribute(): string

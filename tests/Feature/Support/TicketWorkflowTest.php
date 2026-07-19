@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Support;
 
+use App\Models\SupportArea;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,13 +14,16 @@ class TicketWorkflowTest extends TestCase
 
     public function test_technical_user_cannot_take_resolved_ticket(): void
     {
+        $area = $this->createArea('service_desk', 'Service Desk');
         $requester = User::factory()->create();
         $support = User::factory()->create([
             'role' => 'support',
-            'permissions' => ['support.areas.service_desk'],
         ]);
+        $area->users()->attach($support);
 
         $ticket = $this->createTicket($requester, [
+            'area_id' => $area->id,
+            'current_area' => $area->slug,
             'status' => Ticket::STATUS_RESOLVED,
             'resolved_at' => now(),
         ]);
@@ -41,13 +45,16 @@ class TicketWorkflowTest extends TestCase
 
     public function test_requester_can_return_resolved_ticket_and_clear_resolution_timestamp(): void
     {
+        $area = $this->createArea('service_desk', 'Service Desk');
         $requester = User::factory()->create();
         $support = User::factory()->create([
             'role' => 'support',
-            'permissions' => ['support.areas.service_desk'],
         ]);
+        $area->users()->attach($support);
 
         $ticket = $this->createTicket($requester, [
+            'area_id' => $area->id,
+            'current_area' => $area->slug,
             'assigned_to_id' => $support->id,
             'status' => Ticket::STATUS_RESOLVED,
             'resolved_at' => now(),
@@ -71,6 +78,11 @@ class TicketWorkflowTest extends TestCase
 
     public function test_ticket_is_auto_routed_to_detected_area_when_opened(): void
     {
+        $this->createArea('service_desk', 'Service Desk');
+        $infrastructure = $this->createArea('infrastructure', 'Infraestrutura');
+        $this->createArea('systems', 'Sistemas');
+        $this->createArea('development', 'Desenvolvimento');
+
         $requester = User::factory()->create();
 
         $response = $this->actingAs($requester)->post(route('support.tickets.store'), [
@@ -82,38 +94,65 @@ class TicketWorkflowTest extends TestCase
 
         $ticket = Ticket::query()->latest('id')->firstOrFail();
 
-        $this->assertSame('infrastructure', $ticket->current_area);
+        $this->assertSame($infrastructure->id, $ticket->area_id);
+        $this->assertSame($infrastructure->slug, $ticket->current_area);
         $this->assertSame(Ticket::STATUS_OPEN, $ticket->status);
     }
 
     public function test_technical_user_without_area_permission_cannot_take_other_area_ticket(): void
     {
+        $serviceDesk = $this->createArea('service_desk', 'Service Desk');
+        $infrastructure = $this->createArea('infrastructure', 'Infraestrutura');
+
         $requester = User::factory()->create();
         $support = User::factory()->create([
             'role' => 'support',
-            'permissions' => ['support.areas.service_desk'],
         ]);
+        $serviceDesk->users()->attach($support);
 
         $ticket = $this->createTicket($requester, [
-            'current_area' => 'infrastructure',
+            'area_id' => $infrastructure->id,
+            'current_area' => $infrastructure->slug,
             'status' => Ticket::STATUS_OPEN,
         ]);
 
         $response = $this->actingAs($support)
             ->post(route('support.tickets.take', $ticket), [
-                'note' => 'Tentativa fora da área permitida.',
+            'note' => 'Tentativa fora da área permitida.',
             ]);
 
         $response->assertForbidden();
     }
 
+    private function createArea(string $slug, string $name): SupportArea
+    {
+        return SupportArea::updateOrCreate(
+            ['slug' => $slug],
+            [
+                'name' => $name,
+                'description' => $name,
+                'is_active' => true,
+            ]
+        );
+    }
+
     private function createTicket(User $requester, array $attributes = []): Ticket
     {
+        $serviceDesk = SupportArea::firstOrCreate(
+            ['slug' => 'service_desk'],
+            [
+                'name' => 'Service Desk',
+                'description' => 'Triagem inicial e atendimento de primeiro nível.',
+                'is_active' => true,
+            ]
+        );
+
         return Ticket::create(array_merge([
             'requester_id' => $requester->id,
             'subject' => 'Impressora com erro',
             'description' => 'A impressora da recepção parou de responder após a atualização do sistema.',
-            'current_area' => 'service_desk',
+            'area_id' => $serviceDesk->id,
+            'current_area' => $serviceDesk->slug,
             'status' => Ticket::STATUS_OPEN,
         ], $attributes));
     }

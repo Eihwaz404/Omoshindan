@@ -68,7 +68,7 @@
                                         <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-300">{{ $event->note }}</p>
                                     @endif
 
-                                    @if ($event->from_status || $event->to_status || $event->from_area || $event->to_area)
+                                    @if ($event->from_status || $event->to_status || $event->from_area_id || $event->to_area_id || $event->from_area || $event->to_area)
                                         <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
                                             @if ($event->from_status || $event->to_status)
                                                 <span class="rounded-full border border-slate-700 px-3 py-1">
@@ -76,9 +76,9 @@
                                                 </span>
                                             @endif
 
-                                            @if ($event->from_area || $event->to_area)
+                                            @if ($event->from_area_id || $event->to_area_id || $event->from_area || $event->to_area)
                                                 <span class="rounded-full border border-slate-700 px-3 py-1">
-                                                    {{ config('support.areas.'.$event->from_area.'.label', $event->from_area ?? '---') }} → {{ config('support.areas.'.$event->to_area.'.label', $event->to_area ?? '---') }}
+                                                    {{ $event->fromArea?->name ?? $event->from_area ?? '---' }} → {{ $event->toArea?->name ?? $event->to_area ?? '---' }}
                                                 </span>
                                             @endif
                                         </div>
@@ -116,9 +116,9 @@
                                 @if ($canHandleCurrentArea && in_array($ticket->status, [\App\Models\Ticket::STATUS_ANALYSIS, \App\Models\Ticket::STATUS_PROGRESS, \App\Models\Ticket::STATUS_PENDING, \App\Models\Ticket::STATUS_OPEN], true))
                                     <form method="POST" action="{{ route('support.tickets.transfer', $ticket) }}" class="space-y-3">
                                         @csrf
-                                        <select name="current_area" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" required>
-                                            @foreach ($areas as $key => $area)
-                                                <option value="{{ $key }}" @selected($ticket->current_area === $key)>{{ $area['label'] }}</option>
+                                        <select name="target_area_id" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" required>
+                                            @foreach ($areas as $area)
+                                                <option value="{{ $area->id }}" @selected($ticket->area_id === $area->id)>{{ $area->name }}</option>
                                             @endforeach
                                         </select>
                                         <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Motivo do encaminhamento" required></textarea>

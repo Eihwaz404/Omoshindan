@@ -35,8 +35,8 @@
                         <x-input-label for="area" value="Área" />
                         <select id="area" name="area" class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400">
                             <option value="">Todas</option>
-                            @foreach ($areas as $key => $area)
-                                <option value="{{ $key }}" @selected($filters['area'] === $key)>{{ $area['label'] }}</option>
+                            @foreach ($areas as $area)
+                                <option value="{{ $area->id }}" @selected($filters['area'] === (string) $area->id)>{{ $area->name }}</option>
                             @endforeach
                         </select>
                     </div>
