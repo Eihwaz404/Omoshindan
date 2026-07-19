@@ -57,6 +57,7 @@ class TicketController extends Controller
             'ticket' => new Ticket([
                 'status' => Ticket::STATUS_OPEN,
             ]),
+            'areas' => SupportArea::query()->active()->orderBy('name')->get(),
             'statuses' => config('support.statuses', []),
         ]);
     }
@@ -64,17 +65,16 @@ class TicketController extends Controller
     public function store(StoreTicketRequest $request): RedirectResponse
     {
         $ticket = DB::transaction(function () use ($request) {
-            $detectedArea = Ticket::detectArea(
-                (string) $request->string('subject'),
-                (string) $request->string('description'),
-            ) ?? SupportArea::query()->active()->firstOrFail();
+            $area = SupportArea::query()
+                ->active()
+                ->findOrFail($request->integer('area_id'));
 
             $ticket = Ticket::create([
                 'requester_id' => $request->user()->id,
                 'subject' => $request->string('subject'),
                 'description' => $request->string('description'),
-                'area_id' => $detectedArea->id,
-                'current_area' => $detectedArea->slug,
+                'area_id' => $area->id,
+                'current_area' => $area->slug,
                 'status' => Ticket::STATUS_OPEN,
             ]);
 
@@ -85,7 +85,7 @@ class TicketController extends Controller
                 note: $request->string('description'),
                 toStatus: Ticket::STATUS_OPEN,
                 toAreaId: $ticket->area_id,
-                toArea: $detectedArea->slug
+                toArea: $area->slug
             );
 
             return $ticket;

@@ -76,7 +76,7 @@ class TicketWorkflowTest extends TestCase
         $this->assertNull($ticket->resolved_at);
     }
 
-    public function test_ticket_is_auto_routed_to_detected_area_when_opened(): void
+    public function test_ticket_is_created_with_user_selected_area(): void
     {
         $this->createArea('service_desk', 'Service Desk');
         $infrastructure = $this->createArea('infrastructure', 'Infraestrutura');
@@ -88,6 +88,7 @@ class TicketWorkflowTest extends TestCase
         $response = $this->actingAs($requester)->post(route('support.tickets.store'), [
             'subject' => 'Servidor sem acesso à VPN',
             'description' => 'O servidor e a VPN da unidade caíram após a manutenção da rede.',
+            'area_id' => $infrastructure->id,
         ]);
 
         $response->assertRedirect();

@@ -5,8 +5,23 @@
         <x-input-error class="mt-2" :messages="$errors->get('subject')" />
     </div>
 
-    <div class="rounded-xl border border-cyan-400/20 bg-cyan-500/10 p-4 text-sm leading-6 text-cyan-50">
-        {{ __('A área será identificada automaticamente com base no assunto e na descrição do problema. Descreva o máximo de contexto possível para melhorar o encaminhamento.') }}
+    <div>
+        <x-input-label for="area_id" value="Área de suporte" />
+        <select
+            id="area_id"
+            name="area_id"
+            class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
+            required
+        >
+            <option value="">Selecione uma área</option>
+            @foreach ($areas as $area)
+                <option value="{{ $area->id }}" @selected((string) old('area_id', $ticket->area_id ?? '') === (string) $area->id)>
+                    {{ $area->name }}
+                </option>
+            @endforeach
+        </select>
+        <p class="mt-2 text-xs leading-5 text-slate-500">Escolha a área que deve receber o ticket logo na abertura.</p>
+        <x-input-error class="mt-2" :messages="$errors->get('area_id')" />
     </div>
 
     <div>

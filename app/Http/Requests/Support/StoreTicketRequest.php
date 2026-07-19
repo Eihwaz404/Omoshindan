@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Support;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTicketRequest extends FormRequest
 {
@@ -24,6 +25,7 @@ class StoreTicketRequest extends FormRequest
         return [
             'subject' => ['required', 'string', 'max:150'],
             'description' => ['required', 'string', 'min:20'],
+            'area_id' => ['required', 'integer', Rule::exists('support_areas', 'id')->where(fn ($query) => $query->where('is_active', true))],
         ];
     }
 }

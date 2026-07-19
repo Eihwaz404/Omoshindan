@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-semibold leading-tight text-slate-100">{{ __('Novo ticket') }}</h2>
-            <p class="mt-1 text-sm text-slate-400">{{ __('O sistema vai classificar e direcionar o chamado automaticamente para a área mais provável.') }}</p>
+            <p class="mt-1 text-sm text-slate-400">{{ __('Escolha a área de suporte responsável ao abrir o chamado.') }}</p>
         </div>
     </x-slot>
 
