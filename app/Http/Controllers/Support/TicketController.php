@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Support;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Support\StoreTicketRequest;
 use App\Models\SupportArea;
+use App\Models\SupportSubject;
+use App\Models\TicketAttachment;
 use App\Models\Ticket;
 use App\Models\TicketEvent;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,36 +22,7 @@ class TicketController extends Controller
 {
     public function index(Request $request): View
     {
-        $user = $request->user();
-
-        $tickets = Ticket::query()
-            ->with(['requester', 'assignedTo', 'area'])
-            ->visibleTo($user)
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->when($request->filled('area'), fn ($query) => $query->where('area_id', $request->integer('area')))
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = trim((string) $request->string('search'));
-
-                $query->where(function ($query) use ($search) {
-                    $query->where('subject', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
-            })
-            ->latest()
-            ->paginate(12)
-            ->withQueryString();
-
-        return view('support.tickets.index', [
-            'tickets' => $tickets,
-            'areas' => SupportArea::query()->active()->orderBy('name')->get(),
-            'statuses' => config('support.statuses', []),
-            'isTechnical' => $user->isTechnical(),
-            'filters' => [
-                'status' => (string) $request->string('status'),
-                'area' => (string) $request->string('area'),
-                'search' => trim((string) $request->string('search')),
-            ],
-        ]);
+        return view('support.tickets.index');
     }
 
     public function create(): View
@@ -58,6 +32,13 @@ class TicketController extends Controller
                 'status' => Ticket::STATUS_OPEN,
             ]),
             'areas' => SupportArea::query()->active()->orderBy('name')->get(),
+            'subjects' => SupportSubject::query()
+                ->active()
+                ->orderBy('category')
+                ->orderBy('name')
+                ->get(),
+            'descriptionMinLength' => StoreTicketRequest::DESCRIPTION_MIN_LENGTH,
+            'descriptionMaxLength' => StoreTicketRequest::DESCRIPTION_MAX_LENGTH,
             'statuses' => config('support.statuses', []),
         ]);
     }
@@ -68,10 +49,14 @@ class TicketController extends Controller
             $area = SupportArea::query()
                 ->active()
                 ->findOrFail($request->integer('area_id'));
+            $subject = SupportSubject::query()
+                ->active()
+                ->findOrFail($request->integer('subject_id'));
 
             $ticket = Ticket::create([
                 'requester_id' => $request->user()->id,
-                'subject' => $request->string('subject'),
+                'subject_id' => $subject->id,
+                'subject' => $subject->name,
                 'description' => $request->string('description'),
                 'area_id' => $area->id,
                 'current_area' => $area->slug,
@@ -85,7 +70,8 @@ class TicketController extends Controller
                 note: $request->string('description'),
                 toStatus: Ticket::STATUS_OPEN,
                 toAreaId: $ticket->area_id,
-                toArea: $area->slug
+                toArea: $area->slug,
+                attachments: $this->validateUploadedImages($request),
             );
 
             return $ticket;
@@ -100,11 +86,16 @@ class TicketController extends Controller
     {
         abort_unless($ticket->isVisibleTo($request->user()), 403);
 
-        $ticket->load(['requester', 'assignedTo', 'area', 'events.actor', 'events.fromArea', 'events.toArea']);
+        $ticket->load(['requester', 'assignedTo', 'area', 'events.actor', 'events.fromArea', 'events.toArea', 'events.attachments.uploader']);
 
         return view('support.tickets.show', [
             'ticket' => $ticket,
             'areas' => SupportArea::query()->active()->orderBy('name')->get(),
+            'subjects' => SupportSubject::query()
+                ->active()
+                ->orderBy('category')
+                ->orderBy('name')
+                ->get(),
             'statuses' => config('support.statuses', []),
             'isTechnical' => $request->user()->isTechnical(),
             'isAssignedToCurrentUser' => $ticket->assigned_to_id === $request->user()->id,
@@ -125,7 +116,8 @@ class TicketController extends Controller
             ticket: $ticket,
             actorId: $request->user()->id,
             type: 'comment',
-            note: $data['note']
+            note: $data['note'],
+            attachments: $this->validateUploadedImages($request),
         );
 
         return back()->with('status', __('Informação adicionada ao ticket.'));
@@ -149,7 +141,8 @@ class TicketController extends Controller
             type: 'assigned',
             note: $request->string('note') ?: __('Ticket assumido e movido para análise.'),
             fromStatus: $fromStatus,
-            toStatus: Ticket::STATUS_ANALYSIS
+            toStatus: Ticket::STATUS_ANALYSIS,
+            attachments: $this->validateUploadedImages($request),
         );
 
         $ticket->forceFill([
@@ -200,7 +193,8 @@ class TicketController extends Controller
             fromAreaId: $previousArea?->id,
             toAreaId: $targetArea->id,
             fromArea: $previousArea?->slug,
-            toArea: $targetArea->slug
+            toArea: $targetArea->slug,
+            attachments: $this->validateUploadedImages($request),
         );
 
         return back()->with('status', __('Ticket encaminhado para outra área.'));
@@ -231,7 +225,8 @@ class TicketController extends Controller
             type: 'requested_info',
             note: $data['note'],
             fromStatus: $fromStatus,
-            toStatus: Ticket::STATUS_PENDING
+            toStatus: Ticket::STATUS_PENDING,
+            attachments: $this->validateUploadedImages($request),
         );
 
         return back()->with('status', __('Ticket devolvido ao solicitante para complementação.'));
@@ -263,7 +258,8 @@ class TicketController extends Controller
             type: 'resolved',
             note: $data['note'],
             fromStatus: $fromStatus,
-            toStatus: Ticket::STATUS_RESOLVED
+            toStatus: Ticket::STATUS_RESOLVED,
+            attachments: $this->validateUploadedImages($request),
         );
 
         return back()->with('status', __('Ticket marcado como solucionado.'));
@@ -295,7 +291,8 @@ class TicketController extends Controller
             type: 'pending',
             note: $data['note'],
             fromStatus: $fromStatus,
-            toStatus: Ticket::STATUS_ANALYSIS
+            toStatus: Ticket::STATUS_ANALYSIS,
+            attachments: $this->validateUploadedImages($request),
         );
 
         return back()->with('status', __('Ticket devolvido para a TI.'));
@@ -325,7 +322,8 @@ class TicketController extends Controller
             type: 'closed',
             note: $data['note'] ?? __('Usuário confirmou a solução do ticket.'),
             fromStatus: $fromStatus,
-            toStatus: Ticket::STATUS_CLOSED
+            toStatus: Ticket::STATUS_CLOSED,
+            attachments: $this->validateUploadedImages($request),
         );
 
         return back()->with('status', __('Ticket finalizado.'));
@@ -367,6 +365,7 @@ class TicketController extends Controller
         ?string $toArea = null,
         ?int $fromAreaId = null,
         ?int $toAreaId = null,
+        array $attachments = [],
     ): TicketEvent {
         $event = $ticket->events()->create([
             'actor_id' => $actorId,
@@ -380,8 +379,44 @@ class TicketController extends Controller
             'to_area_id' => $toAreaId,
         ]);
 
+        $this->storeAttachments($ticket, $event, $attachments, $actorId);
         $ticket->touch();
 
         return $event;
+    }
+
+    private function validateUploadedImages(Request $request): array
+    {
+        $request->validate([
+            'images' => ['nullable', 'array', 'max:'.StoreTicketRequest::ATTACHMENTS_MAX_COUNT],
+            'images.*' => ['nullable', 'file', 'mimes:jpg,jpeg', 'mimetypes:image/jpeg,image/pjpeg', 'max:'.StoreTicketRequest::ATTACHMENT_MAX_SIZE_KB],
+        ]);
+
+        return $request->file('images', []) ?: [];
+    }
+
+    /**
+     * @param array<int, UploadedFile> $attachments
+     */
+    private function storeAttachments(Ticket $ticket, TicketEvent $event, array $attachments, ?int $uploadedById): void
+    {
+        foreach ($attachments as $attachment) {
+            if (! $attachment instanceof UploadedFile) {
+                continue;
+            }
+
+            $path = $attachment->storePublicly("tickets/{$ticket->id}/events/{$event->id}", 'public');
+
+            TicketAttachment::create([
+                'ticket_id' => $ticket->id,
+                'ticket_event_id' => $event->id,
+                'uploaded_by_id' => $uploadedById,
+                'disk' => 'public',
+                'path' => $path,
+                'original_name' => $attachment->getClientOriginalName(),
+                'mime_type' => $attachment->getMimeType() ?? 'image/jpeg',
+                'size' => (int) $attachment->getSize(),
+            ]);
+        }
     }
 }

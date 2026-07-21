@@ -2,14 +2,14 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-semibold leading-tight text-slate-100">{{ __('Novo ticket') }}</h2>
-            <p class="mt-1 text-sm text-slate-400">{{ __('Escolha a área de suporte responsável ao abrir o chamado.') }}</p>
+            <p class="mt-1 text-sm text-slate-400">{{ __('Escolha o assunto e a área de suporte responsável ao abrir o chamado.') }}</p>
         </div>
     </x-slot>
 
     <div class="py-8 sm:py-10">
         <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12">
             <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-lg shadow-slate-950/40 sm:p-8">
-                <form method="POST" action="{{ route('support.tickets.store') }}" class="space-y-6">
+                <form method="POST" action="{{ route('support.tickets.store') }}" class="space-y-6" enctype="multipart/form-data">
                     @csrf
 
                     @include('support.tickets.partials.form', ['ticket' => $ticket])

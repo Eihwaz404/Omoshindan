@@ -47,11 +47,14 @@
                                 <a href="{{ route('support.areas.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
                                     {{ __('Áreas') }}
                                 </a>
+                                <a href="{{ route('support.subjects.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                                    {{ __('Assunto') }}
+                                </a>
                             @endcan
                         </div>
                     </div>
 
-                    @can('database.manage')
+                    @canany(['settings.manage', 'database.manage'])
                         <div class="relative flex items-center sm:-my-px" @click.outside="adminOpen = false">
                             <button
                                 type="button"
@@ -75,12 +78,15 @@
                                 x-transition:leave-end="opacity-0 scale-95"
                                 class="absolute left-0 top-full z-[60] mt-2 w-52 overflow-hidden rounded-md border border-slate-800 bg-slate-900 shadow-xl shadow-slate-950/60"
                             >
+                                <a href="{{ route('admin.settings.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
+                                    {{ __('Configurações') }}
+                                </a>
                                 <a href="{{ route('admin.database.index') }}" class="block px-4 py-3 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-white">
                                     {{ __('Banco de dados') }}
                                 </a>
                             </div>
                         </div>
-                    @endcan
+                    @endcanany
 
                     @can('users.view')
                         <div class="relative flex items-center sm:-my-px" @click.outside="accessOpen = false">
@@ -188,6 +194,10 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
+            <x-responsive-nav-link :href="route('support.tickets.index')" :active="request()->routeIs('support.tickets.*')">
+                {{ __('Tickets') }}
+            </x-responsive-nav-link>
+
             @can('users.view')
                 <x-responsive-nav-link :href="route('access.users.index')" :active="request()->routeIs('access.users.*')">
                     {{ __('Usuários') }}
@@ -198,13 +208,19 @@
                 <x-responsive-nav-link :href="route('support.areas.index')" :active="request()->routeIs('support.areas.*')">
                     {{ __('Áreas') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('support.subjects.index')" :active="request()->routeIs('support.subjects.*')">
+                    {{ __('Assunto') }}
+                </x-responsive-nav-link>
             @endcan
 
-            @can('database.manage')
+            @canany(['settings.manage', 'database.manage'])
+                <x-responsive-nav-link :href="route('admin.settings.index')" :active="request()->routeIs('admin.settings.*')">
+                    {{ __('Configurações') }}
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.database.index')" :active="request()->routeIs('admin.database.*')">
                     {{ __('Banco de dados') }}
                 </x-responsive-nav-link>
-            @endcan
+            @endcanany
         </div>
 
         <!-- Responsive Settings Options -->

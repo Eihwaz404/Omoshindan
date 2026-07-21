@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TicketEvent extends Model
 {
@@ -43,6 +44,11 @@ class TicketEvent extends Model
     public function toArea(): BelongsTo
     {
         return $this->belongsTo(SupportArea::class, 'to_area_id');
+    }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TicketAttachment::class);
     }
 
     public function getTypeLabelAttribute(): string

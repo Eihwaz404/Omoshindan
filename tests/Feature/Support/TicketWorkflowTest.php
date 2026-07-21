@@ -3,9 +3,13 @@
 namespace Tests\Feature\Support;
 
 use App\Models\SupportArea;
+use App\Models\SupportSubject;
+use App\Models\TicketAttachment;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class TicketWorkflowTest extends TestCase
@@ -82,13 +86,14 @@ class TicketWorkflowTest extends TestCase
         $infrastructure = $this->createArea('infrastructure', 'Infraestrutura');
         $this->createArea('systems', 'Sistemas');
         $this->createArea('development', 'Desenvolvimento');
+        $subject = $this->createSubject(2, 'Sem conexão com a VPN');
 
         $requester = User::factory()->create();
 
         $response = $this->actingAs($requester)->post(route('support.tickets.store'), [
-            'subject' => 'Servidor sem acesso à VPN',
             'description' => 'O servidor e a VPN da unidade caíram após a manutenção da rede.',
             'area_id' => $infrastructure->id,
+            'subject_id' => $subject->id,
         ]);
 
         $response->assertRedirect();
@@ -98,6 +103,36 @@ class TicketWorkflowTest extends TestCase
         $this->assertSame($infrastructure->id, $ticket->area_id);
         $this->assertSame($infrastructure->slug, $ticket->current_area);
         $this->assertSame(Ticket::STATUS_OPEN, $ticket->status);
+    }
+
+    public function test_ticket_can_be_created_with_jpg_attachments(): void
+    {
+        Storage::fake('public');
+
+        $area = $this->createArea('service_desk', 'Service Desk');
+        $subject = $this->createSubject(1, 'Acesso ao sistema');
+        $requester = User::factory()->create();
+
+        $response = $this->actingAs($requester)->post(route('support.tickets.store'), [
+            'subject_id' => $subject->id,
+            'description' => 'A aplicação está apresentando falha ao abrir a tela de login e preciso registrar um teste com imagem.',
+            'area_id' => $area->id,
+            'images' => [
+                UploadedFile::fake()->image('evidencia.jpg')->size(1200),
+            ],
+        ]);
+
+        $response->assertRedirect();
+
+        $attachment = TicketAttachment::query()->firstOrFail();
+
+        $this->assertDatabaseHas('ticket_attachments', [
+            'ticket_id' => $attachment->ticket_id,
+            'ticket_event_id' => $attachment->ticket_event_id,
+            'original_name' => 'evidencia.jpg',
+        ]);
+
+        Storage::disk('public')->assertExists($attachment->path);
     }
 
     public function test_technical_user_without_area_permission_cannot_take_other_area_ticket(): void
@@ -232,6 +267,19 @@ class TicketWorkflowTest extends TestCase
             [
                 'name' => $name,
                 'description' => $name,
+                'is_active' => true,
+            ]
+        );
+    }
+
+    private function createSubject(int $category, string $name): SupportSubject
+    {
+        return SupportSubject::updateOrCreate(
+            [
+                'category' => $category,
+                'name' => $name,
+            ],
+            [
                 'is_active' => true,
             ]
         );

@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\DatabaseController as AdminDatabaseController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Access\UserController as AccessUserController;
 use App\Http\Controllers\Support\AreaController as SupportAreaController;
+use App\Http\Controllers\Support\SubjectController as SupportSubjectController;
 use App\Http\Controllers\Support\TicketController as SupportTicketController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +24,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('administrativo/banco-de-dados')->name('admin.database.')->middleware('can:database.manage')->group(function () {
         Route::get('/', [AdminDatabaseController::class, 'index'])->name('index');
         Route::post('/sanitizar', [AdminDatabaseController::class, 'sanitize'])->name('sanitize');
+    });
+
+    Route::prefix('administrativo/configuracoes')->name('admin.settings.')->middleware('can:settings.manage')->group(function () {
+        Route::get('/', [AdminSettingsController::class, 'index'])->name('index');
+        Route::post('/', [AdminSettingsController::class, 'update'])->name('update');
     });
 
     Route::prefix('suporte/tickets')->name('support.tickets.')->group(function () {
@@ -45,6 +52,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{area}/editar', [SupportAreaController::class, 'edit'])->name('edit');
         Route::put('/{area}', [SupportAreaController::class, 'update'])->name('update');
         Route::delete('/{area}', [SupportAreaController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('suporte/assuntos')->name('support.subjects.')->middleware('can:support.areas.manage')->group(function () {
+        Route::get('/', [SupportSubjectController::class, 'index'])->name('index');
+        Route::get('/novo', [SupportSubjectController::class, 'create'])->name('create');
+        Route::post('/', [SupportSubjectController::class, 'store'])->name('store');
+        Route::get('/{subject}/editar', [SupportSubjectController::class, 'edit'])->name('edit');
+        Route::put('/{subject}', [SupportSubjectController::class, 'update'])->name('update');
+        Route::delete('/{subject}', [SupportSubjectController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('acesso/usuarios')->name('access.users.')->group(function () {

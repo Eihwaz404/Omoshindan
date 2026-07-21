@@ -19,6 +19,7 @@ class Ticket extends Model
 
     protected $fillable = [
         'subject',
+        'subject_id',
         'description',
         'requester_id',
         'assigned_to_id',
@@ -47,6 +48,11 @@ class Ticket extends Model
     public function area(): BelongsTo
     {
         return $this->belongsTo(SupportArea::class, 'area_id');
+    }
+
+    public function supportSubject(): BelongsTo
+    {
+        return $this->belongsTo(SupportSubject::class, 'subject_id');
     }
 
     public function events(): HasMany
@@ -85,6 +91,11 @@ class Ticket extends Model
     public function getAreaLabelAttribute(): string
     {
         return $this->area?->name ?? $this->current_area ?? '-';
+    }
+
+    public function getSubjectLabelAttribute(): string
+    {
+        return $this->subject ?: ($this->supportSubject?->name ?? '-');
     }
 
     /**

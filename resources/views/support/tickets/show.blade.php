@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div>
                 <h2 class="text-xl font-semibold leading-tight text-slate-100">{{ $ticket->reference }}</h2>
-                <p class="mt-1 text-sm text-slate-400">{{ $ticket->subject }}</p>
+                <p class="mt-1 text-sm text-slate-400">{{ $ticket->subject_label }}</p>
             </div>
 
             <div class="flex flex-wrap gap-2">
@@ -68,6 +68,20 @@
                                         <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-300">{{ $event->note }}</p>
                                     @endif
 
+                                    @if ($event->attachments->isNotEmpty())
+                                        <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                            @foreach ($event->attachments as $attachment)
+                                                <a href="{{ asset('storage/'.$attachment->path) }}" target="_blank" class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/70 transition hover:border-cyan-400/40">
+                                                    <img src="{{ asset('storage/'.$attachment->path) }}" alt="{{ $attachment->original_name }}" class="h-40 w-full object-cover">
+                                                    <div class="border-t border-slate-800 px-3 py-2">
+                                                        <p class="truncate text-xs font-medium text-slate-200">{{ $attachment->original_name }}</p>
+                                                        <p class="mt-1 text-xs text-slate-500">{{ number_format($attachment->size / 1024, 1, ',', '.') }} KB</p>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
                                     @if ($event->from_status || $event->to_status || $event->from_area_id || $event->to_area_id || $event->from_area || $event->to_area)
                                         <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
                                             @if ($event->from_status || $event->to_status)
@@ -121,9 +135,10 @@
                                                 </div>
                                                 <span class="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold text-slate-300">Vai para análise</span>
                                             </div>
-                                            <form method="POST" action="{{ route('support.tickets.take', $ticket) }}" class="mt-4 space-y-3">
+                                            <form method="POST" action="{{ route('support.tickets.take', $ticket) }}" class="mt-4 space-y-3" enctype="multipart/form-data">
                                                 @csrf
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Observação opcional"></textarea>
+                                                @include('support.tickets.partials.attachments')
                                                 <x-primary-button type="submit">{{ __('Assumir e mover para análise') }}</x-primary-button>
                                             </form>
                                         </div>
@@ -148,9 +163,10 @@
                                                 </div>
                                                 <span class="rounded-full border border-amber-300/20 px-3 py-1 text-xs font-semibold text-amber-50">Vai para o solicitante</span>
                                             </div>
-                                            <form method="POST" action="{{ route('support.tickets.request-info', $ticket) }}" class="mt-4 space-y-3">
+                                            <form method="POST" action="{{ route('support.tickets.request-info', $ticket) }}" class="mt-4 space-y-3" enctype="multipart/form-data">
                                                 @csrf
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-amber-300/30 bg-slate-950/80 text-slate-100 shadow-sm focus:border-amber-300 focus:ring-amber-300" placeholder="Explique quais informações faltam" required></textarea>
+                                                @include('support.tickets.partials.attachments')
                                                 <x-secondary-button type="submit">{{ __('Devolver ao solicitante') }}</x-secondary-button>
                                             </form>
                                         </div>
@@ -170,7 +186,7 @@
                                                 </div>
                                                 <span class="rounded-full border border-slate-700 px-3 py-1 text-xs font-semibold text-slate-300">Troca de área</span>
                                             </div>
-                                            <form method="POST" action="{{ route('support.tickets.transfer', $ticket) }}" class="mt-4 space-y-3">
+                                            <form method="POST" action="{{ route('support.tickets.transfer', $ticket) }}" class="mt-4 space-y-3" enctype="multipart/form-data">
                                                 @csrf
                                                 <label class="block">
                                                     <span class="mb-1 block text-sm font-medium text-slate-200">Nova área</span>
@@ -181,6 +197,7 @@
                                                     </select>
                                                 </label>
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Motivo e contexto do encaminhamento" required></textarea>
+                                                @include('support.tickets.partials.attachments')
                                                 <x-primary-button type="submit">{{ __('Encaminhar') }}</x-primary-button>
                                             </form>
                                         </div>
@@ -195,9 +212,10 @@
                                                 </div>
                                                 <span class="rounded-full border border-emerald-300/20 px-3 py-1 text-xs font-semibold text-emerald-50">Volta ao usuário</span>
                                             </div>
-                                            <form method="POST" action="{{ route('support.tickets.resolve', $ticket) }}" class="mt-4 space-y-3">
+                                            <form method="POST" action="{{ route('support.tickets.resolve', $ticket) }}" class="mt-4 space-y-3" enctype="multipart/form-data">
                                                 @csrf
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-emerald-300/30 bg-slate-950/80 text-slate-100 shadow-sm focus:border-emerald-300 focus:ring-emerald-300" placeholder="Resumo da solução" required></textarea>
+                                                @include('support.tickets.partials.attachments')
                                                 <x-primary-button type="submit">{{ __('Marcar como solucionado') }}</x-primary-button>
                                             </form>
                                         </div>
@@ -227,16 +245,18 @@
 
                             <div class="mt-4 space-y-3">
                                 @if ($ticket->status === \App\Models\Ticket::STATUS_RESOLVED)
-                                    <form method="POST" action="{{ route('support.tickets.close', $ticket) }}" class="space-y-3">
+                                    <form method="POST" action="{{ route('support.tickets.close', $ticket) }}" class="space-y-3" enctype="multipart/form-data">
                                         @csrf
                                         <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Comentário opcional"></textarea>
+                                        @include('support.tickets.partials.attachments')
                                         <x-primary-button type="submit">{{ __('Fechar ticket') }}</x-primary-button>
                                     </form>
                                 @endif
 
-                                <form method="POST" action="{{ route('support.tickets.return', $ticket) }}" class="space-y-3">
+                                <form method="POST" action="{{ route('support.tickets.return', $ticket) }}" class="space-y-3" enctype="multipart/form-data">
                                     @csrf
                                     <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="{{ $ticket->status === \App\Models\Ticket::STATUS_RESOLVED ? __('Explique o que ainda precisa de ajuste') : __('Adicione a informação solicitada') }}" required></textarea>
+                                    @include('support.tickets.partials.attachments')
                                     <x-secondary-button type="submit">
                                         {{ $ticket->status === \App\Models\Ticket::STATUS_RESOLVED ? __('Devolver para a TI') : __('Responder e devolver à TI') }}
                                     </x-secondary-button>
@@ -248,9 +268,10 @@
                     <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40">
                         <h3 class="text-base font-semibold text-slate-100">Adicionar informação</h3>
 
-                        <form method="POST" action="{{ route('support.tickets.comment', $ticket) }}" class="mt-4 space-y-3">
+                        <form method="POST" action="{{ route('support.tickets.comment', $ticket) }}" class="mt-4 space-y-3" enctype="multipart/form-data">
                             @csrf
                             <textarea name="note" rows="4" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Detalhes adicionais" required></textarea>
+                            @include('support.tickets.partials.attachments')
                             <x-primary-button type="submit">{{ __('Registrar') }}</x-primary-button>
                         </form>
                     </div>

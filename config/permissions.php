@@ -42,14 +42,18 @@ return [
             'label' => 'Suporte',
             'permissions' => [
                 'support.areas.manage' => [
-                    'label' => 'Gerenciar áreas de suporte',
-                    'description' => 'Permite cadastrar, editar e vincular usuários às áreas de suporte.',
+                    'label' => 'Gerenciar áreas e assuntos de suporte',
+                    'description' => 'Permite cadastrar, editar e vincular usuários às áreas e aos assuntos de suporte.',
                 ],
             ],
         ],
         'Administrativo' => [
             'label' => 'Administrativo',
             'permissions' => [
+                'settings.manage' => [
+                    'label' => 'Gerenciar configurações do sistema',
+                    'description' => 'Permite ajustar parâmetros administrativos, como a atualização automática da fila de chamados.',
+                ],
                 'database.manage' => [
                     'label' => 'Gerenciar banco de dados',
                     'description' => 'Permite acessar a tela administrativa e sanitizar tabelas controladas.',
