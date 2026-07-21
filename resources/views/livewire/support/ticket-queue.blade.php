@@ -40,15 +40,6 @@
                 </select>
             </div>
 
-            <div class="flex flex-col justify-end gap-2">
-                <x-primary-button type="button" wire:click="resetFilters">
-                    {{ __('Limpar') }}
-                </x-primary-button>
-
-                <p class="text-xs text-slate-500">
-                    Atualiza automaticamente a cada {{ $this->refreshInterval }} segundos.
-                </p>
-            </div>
         </div>
     </div>
 

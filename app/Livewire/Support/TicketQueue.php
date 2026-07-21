@@ -35,12 +35,6 @@ class TicketQueue extends Component
         $this->resetPage();
     }
 
-    public function resetFilters(): void
-    {
-        $this->reset(['search', 'status', 'area']);
-        $this->resetPage();
-    }
-
     public function getRefreshIntervalProperty(): int
     {
         return max(1, min(300, SystemSetting::integer('queue_refresh_interval_seconds', 15)));
