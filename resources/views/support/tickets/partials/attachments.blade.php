@@ -13,9 +13,7 @@
             @click.prevent="if (fields < maxFields) fields++"
             :disabled="fields >= maxFields"
         >
-            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path d="M10 4a1 1 0 0 1 1 1v4h4a1 1 0 1 1 0 2h-4v4a1 1 0 1 1-2 0v-4H5a1 1 0 1 1 0-2h4V5a1 1 0 0 1 1-1z" />
-            </svg>
+            <x-heroicon-o-plus class="h-4 w-4" />
             <span>{{ __('Adicionar imagem') }}</span>
         </button>
     </div>

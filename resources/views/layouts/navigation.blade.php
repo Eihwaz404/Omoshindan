@@ -24,9 +24,7 @@
                             class="inline-flex h-full items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-slate-400 transition duration-150 ease-in-out hover:border-slate-500 hover:text-slate-100 focus:border-slate-500 focus:text-slate-100 focus:outline-none"
                         >
                             {{ __('Suporte') }}
-                            <svg class="ms-1 h-4 w-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                            <x-heroicon-o-chevron-down class="ms-1 h-4 w-4" />
                         </button>
 
                         <div
@@ -62,9 +60,7 @@
                                 class="inline-flex h-full items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-slate-400 transition duration-150 ease-in-out hover:border-slate-500 hover:text-slate-100 focus:border-slate-500 focus:text-slate-100 focus:outline-none"
                             >
                                 {{ __('Administrativo') }}
-                                <svg class="ms-1 h-4 w-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
+                                <x-heroicon-o-chevron-down class="ms-1 h-4 w-4" />
                             </button>
 
                             <div
@@ -96,9 +92,7 @@
                                 class="inline-flex h-full items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium leading-5 text-slate-400 transition duration-150 ease-in-out hover:border-slate-500 hover:text-slate-100 focus:border-slate-500 focus:text-slate-100 focus:outline-none"
                             >
                                 {{ __('Acesso') }}
-                                <svg class="ms-1 h-4 w-4 fill-current" viewBox="0 0 20 20" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
+                                <x-heroicon-o-chevron-down class="ms-1 h-4 w-4" />
                             </button>
 
                             <div
@@ -132,9 +126,7 @@
                         <div>{{ Auth::user()->name }}</div>
 
                         <div class="ms-1">
-                            <svg class="h-4 w-4 fill-current text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                            <x-heroicon-o-chevron-down class="h-4 w-4 text-slate-400" />
                         </div>
                     </button>
 
@@ -165,9 +157,7 @@
                                 type="submit"
                                 class="flex w-full items-center gap-3 px-4 py-3 text-start text-sm text-rose-200 transition hover:bg-slate-800 hover:text-rose-100"
                             >
-                                <svg class="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h5a1 1 0 110 2H5v10h4a1 1 0 110 2H4a1 1 0 01-1-1V4zm11.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10H9a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
+                                <x-heroicon-o-arrow-right-on-rectangle class="h-4 w-4 shrink-0" />
                                 <span>Sair</span>
                             </button>
                         </form>
@@ -178,10 +168,8 @@
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition duration-150 ease-in-out hover:bg-slate-800 hover:text-slate-200 focus:bg-slate-800 focus:outline-none focus:text-slate-200">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <x-heroicon-o-bars-3 :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex h-6 w-6" />
+                    <x-heroicon-o-x-mark :class="{'hidden': ! open, 'inline-flex': open }" class="hidden h-6 w-6" />
                 </button>
             </div>
         </div>
@@ -243,9 +231,7 @@
                         type="submit"
                         class="flex w-full items-center gap-3 px-4 py-3 text-start text-sm font-medium text-rose-200 transition duration-150 ease-in-out hover:bg-slate-800 hover:text-rose-100 focus:bg-slate-800 focus:outline-none focus:text-rose-100"
                     >
-                        <svg class="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h5a1 1 0 110 2H5v10h4a1 1 0 110 2H4a1 1 0 01-1-1V4zm11.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10H9a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
+                        <x-heroicon-o-arrow-right-on-rectangle class="h-4 w-4 shrink-0" />
                         <span>Sair</span>
                     </button>
                 </form>
