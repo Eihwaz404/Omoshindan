@@ -74,6 +74,7 @@
                         </div>
 
                         <x-danger-button type="submit" onclick="return confirm('Isso apagará todos os tickets e eventos e reiniciará os IDs. Continuar?')">
+                            <x-heroicon-o-trash class="me-2 h-4 w-4" />
                             {{ __('Sanitizar tabela') }}
                         </x-danger-button>
                     </form>

@@ -3,7 +3,10 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_28%)]"></div>
         <div class="relative grid gap-8 p-6 lg:grid-cols-[1.5fr_1fr] lg:p-8">
             <div class="space-y-4">
-                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-300/80">Operação ativa</p>
+                <p class="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.24em] text-cyan-300/80">
+                    <x-heroicon-o-information-circle class="h-4 w-4" />
+                    Operação ativa
+                </p>
                 <div class="space-y-2">
                     <h1 class="text-3xl font-semibold text-slate-50 sm:text-4xl">
                         {{ __('Indicadores em tempo real do suporte.') }}
@@ -16,19 +19,28 @@
 
             <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
                 <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Total de chamados</div>
+                    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        <x-heroicon-o-clipboard-document-list class="h-4 w-4 text-cyan-300" />
+                        Total de chamados
+                    </div>
                     <div class="mt-3 text-3xl font-semibold text-slate-50">{{ $totalTickets }}</div>
                     <div class="mt-2 text-sm text-slate-400">{{ __('Todos os tickets cadastrados no sistema.') }}</div>
                 </div>
 
                 <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Áreas monitoradas</div>
+                    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        <x-heroicon-o-building-office-2 class="h-4 w-4 text-emerald-300" />
+                        Áreas monitoradas
+                    </div>
                     <div class="mt-3 text-3xl font-semibold text-slate-50">{{ $areaCards->count() }}</div>
                     <div class="mt-2 text-sm text-slate-400">{{ __('Áreas ativas com chamados vinculados.') }}</div>
                 </div>
 
                 <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
-                    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Usuários da TI</div>
+                    <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        <x-heroicon-o-users class="h-4 w-4 text-fuchsia-300" />
+                        Usuários da TI
+                    </div>
                     <div class="mt-3 text-3xl font-semibold text-slate-50">{{ $technicalUsers->count() }}</div>
                     <div class="mt-2 text-sm text-slate-400">{{ __('Usuários com perfil técnico ou administrativo.') }}</div>
                 </div>
@@ -38,7 +50,10 @@
 
     <section class="space-y-4">
         <div>
-            <h3 class="text-lg font-semibold text-slate-100">Chamados por status</h3>
+            <h3 class="inline-flex items-center gap-2 text-lg font-semibold text-slate-100">
+                <x-heroicon-o-rectangle-stack class="h-5 w-5 text-cyan-300" />
+                Chamados por status
+            </h3>
             <p class="mt-1 text-sm text-slate-400">Distribuição da fila de suporte em cada etapa do fluxo.</p>
         </div>
 
@@ -73,7 +88,10 @@
     <section class="grid gap-6 xl:grid-cols-2">
         <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-lg shadow-slate-950/40">
             <div class="border-b border-slate-800 px-6 py-5">
-                <h3 class="text-lg font-semibold text-slate-100">Chamados por área de suporte</h3>
+                <h3 class="inline-flex items-center gap-2 text-lg font-semibold text-slate-100">
+                    <x-heroicon-o-building-office-2 class="h-5 w-5 text-emerald-300" />
+                    Chamados por área de suporte
+                </h3>
                 <p class="mt-1 text-sm text-slate-400">Volume atual de tickets distribuídos entre as áreas.</p>
             </div>
 
@@ -108,7 +126,10 @@
 
         <div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-lg shadow-slate-950/40">
             <div class="border-b border-slate-800 px-6 py-5">
-                <h3 class="text-lg font-semibold text-slate-100">Chamados por usuário do TI</h3>
+                <h3 class="inline-flex items-center gap-2 text-lg font-semibold text-slate-100">
+                    <x-heroicon-o-users class="h-5 w-5 text-fuchsia-300" />
+                    Chamados por usuário do TI
+                </h3>
                 <p class="mt-1 text-sm text-slate-400">Quantidade de chamados atualmente atribuídos a cada técnico.</p>
             </div>
 

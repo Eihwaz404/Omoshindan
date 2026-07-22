@@ -10,6 +10,7 @@
 
             @can('users.create')
                 <a href="{{ route('access.users.create') }}" class="inline-flex items-center rounded-md border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25 hover:text-white">
+                    <x-heroicon-o-user-plus class="me-2 h-4 w-4" />
                     {{ __('Novo usuário') }}
                 </a>
             @endcan
@@ -36,8 +37,12 @@
                         <x-text-input name="search" value="{{ $search }}" class="block w-full" placeholder="Buscar por nome ou e-mail" />
                     </div>
                     <div class="flex gap-2">
-                        <x-primary-button type="submit">{{ __('Buscar') }}</x-primary-button>
+                        <x-primary-button type="submit">
+                            <x-heroicon-o-magnifying-glass class="me-2 h-4 w-4" />
+                            {{ __('Buscar') }}
+                        </x-primary-button>
                         <a href="{{ route('access.users.index') }}" class="inline-flex items-center rounded-md border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-200 transition hover:bg-slate-700">
+                            <x-heroicon-o-arrow-path class="me-2 h-4 w-4" />
                             {{ __('Limpar') }}
                         </a>
                     </div>
@@ -84,6 +89,7 @@
                                         <div class="flex justify-end gap-2">
                                             @can('users.update')
                                                 <a href="{{ route('access.users.edit', $user) }}" class="inline-flex items-center rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-slate-200 transition hover:bg-slate-700">
+                                                    <x-heroicon-o-pencil-square class="me-2 h-4 w-4" />
                                                     Editar
                                                 </a>
                                             @endcan
@@ -93,6 +99,7 @@
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit" class="inline-flex items-center rounded-md border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-cyan-100 transition hover:bg-cyan-500/20">
+                                                        <x-heroicon-o-arrow-path class="me-2 h-4 w-4" />
                                                         {{ $user->is_active ? 'Desativar' : 'Ativar' }}
                                                     </button>
                                                 </form>
@@ -106,6 +113,7 @@
                                                         x-on:click.prevent="$dispatch('open-modal', 'delete-user-{{ $user->id }}')"
                                                         class="inline-flex items-center rounded-md border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-rose-100 transition hover:bg-rose-500/20"
                                                     >
+                                                        <x-heroicon-o-trash class="me-2 h-4 w-4" />
                                                         Excluir
                                                     </button>
                                                 @endif
@@ -145,10 +153,12 @@
 
                                 <div class="mt-6 flex justify-end gap-3">
                                     <x-secondary-button x-on:click="$dispatch('close')">
+                                        <x-heroicon-o-arrow-left class="me-2 h-4 w-4" />
                                         {{ __('Cancelar') }}
                                     </x-secondary-button>
 
                                     <x-danger-button class="ms-3">
+                                        <x-heroicon-o-trash class="me-2 h-4 w-4" />
                                         {{ __('Excluir') }}
                                     </x-danger-button>
                                 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\TicketSlaCalculator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,11 @@ class Ticket extends Model
     public const STATUS_RESOLVED = 'resolved';
     public const STATUS_CLOSED = 'closed';
 
+    public const PRIORITY_LOW = 'low';
+    public const PRIORITY_NORMAL = 'normal';
+    public const PRIORITY_MEDIUM = 'medium';
+    public const PRIORITY_HIGH = 'high';
+
     protected $fillable = [
         'subject',
         'subject_id',
@@ -26,6 +32,7 @@ class Ticket extends Model
         'area_id',
         'current_area',
         'status',
+        'priority',
         'resolved_at',
         'closed_at',
     ];
@@ -88,6 +95,11 @@ class Ticket extends Model
         return config('support.statuses.'.$this->status, $this->status);
     }
 
+    public function getPriorityLabelAttribute(): string
+    {
+        return config('support.priorities.'.$this->priority.'.label', $this->priority ?? '-');
+    }
+
     public function getAreaLabelAttribute(): string
     {
         return $this->area?->name ?? $this->current_area ?? '-';
@@ -96,6 +108,16 @@ class Ticket extends Model
     public function getSubjectLabelAttribute(): string
     {
         return $this->subject ?: ($this->supportSubject?->name ?? '-');
+    }
+
+    /**
+     * Summary of the SLA clock for the ticket.
+     *
+     * @return array<string, mixed>
+     */
+    public function slaSummary(): array
+    {
+        return app(TicketSlaCalculator::class)->summary($this);
     }
 
     /**

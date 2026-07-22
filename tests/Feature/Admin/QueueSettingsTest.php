@@ -20,12 +20,52 @@ class QueueSettingsTest extends TestCase
             ->get(route('admin.settings.index'))
             ->assertOk()
             ->assertSee('Temp. Att. Fila')
-            ->assertSee('Temp. Att. Dashboard');
+            ->assertSee('Temp. Att. Dashboard')
+            ->assertSee('Jornada de trabalho')
+            ->assertSee('Prioridades');
 
         $this->actingAs($admin)
             ->post(route('admin.settings.update'), [
                 'queue_refresh_interval_seconds' => 45,
                 'dashboard_refresh_interval_seconds' => 20,
+                'work_schedule' => [
+                    'monday' => [
+                        'start' => '08:00',
+                        'end' => '17:00',
+                        'lunch_start' => '12:00',
+                        'lunch_end' => '13:00',
+                    ],
+                    'tuesday' => [
+                        'start' => '08:00',
+                        'end' => '17:00',
+                        'lunch_start' => '12:00',
+                        'lunch_end' => '13:00',
+                    ],
+                    'wednesday' => [
+                        'start' => '08:00',
+                        'end' => '17:00',
+                        'lunch_start' => '12:00',
+                        'lunch_end' => '13:00',
+                    ],
+                    'thursday' => [
+                        'start' => '08:00',
+                        'end' => '17:00',
+                        'lunch_start' => '12:00',
+                        'lunch_end' => '13:00',
+                    ],
+                    'friday' => [
+                        'start' => '08:00',
+                        'end' => '17:00',
+                        'lunch_start' => '12:00',
+                        'lunch_end' => '13:00',
+                    ],
+                ],
+                'priority_sla' => [
+                    'low' => ['minutes' => 1440],
+                    'normal' => ['minutes' => 720],
+                    'medium' => ['minutes' => 240],
+                    'high' => ['minutes' => 60],
+                ],
             ])
             ->assertRedirect();
 
@@ -36,6 +76,18 @@ class QueueSettingsTest extends TestCase
         $this->assertDatabaseHas('system_settings', [
             'key' => 'dashboard_refresh_interval_seconds',
             'value' => '20',
+        ]);
+        $this->assertDatabaseHas('system_settings', [
+            'key' => 'work_schedule_monday_start',
+            'value' => '08:00',
+        ]);
+        $this->assertDatabaseHas('system_settings', [
+            'key' => 'work_schedule_friday_lunch_end',
+            'value' => '13:00',
+        ]);
+        $this->assertDatabaseHas('system_settings', [
+            'key' => 'priority_high_resolution_minutes',
+            'value' => '60',
         ]);
 
         $user = User::factory()->create();

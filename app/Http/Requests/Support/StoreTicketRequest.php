@@ -31,6 +31,7 @@ class StoreTicketRequest extends FormRequest
             'subject_id' => ['required', 'integer', Rule::exists('support_subjects', 'id')->where(fn ($query) => $query->where('is_active', true))],
             'description' => ['required', 'string', 'min:'.self::DESCRIPTION_MIN_LENGTH, 'max:'.self::DESCRIPTION_MAX_LENGTH],
             'area_id' => ['required', 'integer', Rule::exists('support_areas', 'id')->where(fn ($query) => $query->where('is_active', true))],
+            'priority' => ['required', 'string', Rule::in(array_keys(config('support.priorities', [])))],
             'images' => ['nullable', 'array', 'max:'.self::ATTACHMENTS_MAX_COUNT],
             'images.*' => ['nullable', 'file', 'mimes:jpg,jpeg', 'mimetypes:image/jpeg,image/pjpeg', 'max:'.self::ATTACHMENT_MAX_SIZE_KB],
         ];

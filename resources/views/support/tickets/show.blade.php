@@ -8,9 +8,15 @@
 
             <div class="flex flex-wrap gap-2">
                 <span class="inline-flex items-center rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+                    <x-heroicon-o-rectangle-stack class="me-2 h-3.5 w-3.5" />
                     {{ $ticket->status_label }}
                 </span>
+                <span class="inline-flex items-center rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100">
+                    <x-heroicon-o-bolt class="me-2 h-3.5 w-3.5" />
+                    {{ $ticket->priority_label }}
+                </span>
                 <span class="inline-flex items-center rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-200">
+                    <x-heroicon-o-building-office-2 class="me-2 h-3.5 w-3.5" />
                     {{ $ticket->area_label }}
                 </span>
             </div>
@@ -50,8 +56,13 @@
                         </div>
                     </div>
 
+                    <livewire:support.ticket-sla-card :ticket="$ticket" wire:key="ticket-sla-{{ $ticket->id }}" />
+
                     <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40">
-                        <h3 class="text-base font-semibold text-slate-100">Histórico</h3>
+                        <h3 class="flex items-center gap-2 text-base font-semibold text-slate-100">
+                            <x-heroicon-o-rectangle-stack class="h-4 w-4 text-cyan-300" />
+                            <span>Histórico</span>
+                        </h3>
 
                         <div class="mt-5 space-y-4">
                             @forelse ($ticket->events as $event)
@@ -109,7 +120,10 @@
                     @if ($isTechnical)
                         <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40">
                             <div class="flex flex-col gap-2">
-                                <h3 class="text-base font-semibold text-slate-100">Ações da TI</h3>
+                                <h3 class="flex items-center gap-2 text-base font-semibold text-slate-100">
+                                    <x-heroicon-o-users class="h-4 w-4 text-fuchsia-300" />
+                                    <span>Ações da TI</span>
+                                </h3>
                                 <p class="text-sm text-slate-400">
                                     {{ __('A ordem é simples: assumir coloca o ticket em análise. Depois disso, você pode encaminhar para outra área ou marcar como solucionado. Se o ticket estiver na sua posse, você também pode registrar observações a qualquer momento.') }}
                                 </p>
@@ -139,7 +153,10 @@
                                                 @csrf
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Observação opcional"></textarea>
                                                 @include('support.tickets.partials.attachments')
-                                                <x-primary-button type="submit">{{ __('Assumir e mover para análise') }}</x-primary-button>
+                                                <x-primary-button type="submit">
+                                                    <x-heroicon-o-user-plus class="me-2 h-4 w-4" />
+                                                    {{ __('Assumir e mover para análise') }}
+                                                </x-primary-button>
                                             </form>
                                         </div>
                                     @elseif ($isAssignedToCurrentUser)
@@ -167,7 +184,10 @@
                                                 @csrf
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-amber-300/30 bg-slate-950/80 text-slate-100 shadow-sm focus:border-amber-300 focus:ring-amber-300" placeholder="Explique quais informações faltam" required></textarea>
                                                 @include('support.tickets.partials.attachments')
-                                                <x-secondary-button type="submit">{{ __('Devolver ao solicitante') }}</x-secondary-button>
+                                                <x-secondary-button type="submit">
+                                                    <x-heroicon-o-magnifying-glass class="me-2 h-4 w-4" />
+                                                    {{ __('Devolver ao solicitante') }}
+                                                </x-secondary-button>
                                             </form>
                                         </div>
                                     @elseif ($isAssignedToCurrentUser && $ticket->status === \App\Models\Ticket::STATUS_PENDING)
@@ -198,7 +218,10 @@
                                                 </label>
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Motivo e contexto do encaminhamento" required></textarea>
                                                 @include('support.tickets.partials.attachments')
-                                                <x-primary-button type="submit">{{ __('Encaminhar') }}</x-primary-button>
+                                                <x-primary-button type="submit">
+                                                    <x-heroicon-o-building-office-2 class="me-2 h-4 w-4" />
+                                                    {{ __('Encaminhar') }}
+                                                </x-primary-button>
                                             </form>
                                         </div>
                                     @endif
@@ -216,7 +239,10 @@
                                                 @csrf
                                                 <textarea name="note" rows="3" class="block w-full rounded-md border-emerald-300/30 bg-slate-950/80 text-slate-100 shadow-sm focus:border-emerald-300 focus:ring-emerald-300" placeholder="Resumo da solução" required></textarea>
                                                 @include('support.tickets.partials.attachments')
-                                                <x-primary-button type="submit">{{ __('Marcar como solucionado') }}</x-primary-button>
+                                                <x-primary-button type="submit">
+                                                    <x-heroicon-o-check-badge class="me-2 h-4 w-4" />
+                                                    {{ __('Marcar como solucionado') }}
+                                                </x-primary-button>
                                             </form>
                                         </div>
                                     @endif
@@ -265,14 +291,20 @@
                         </div>
                     @endif
 
-                    <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40">
-                        <h3 class="text-base font-semibold text-slate-100">Adicionar informação</h3>
+                        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg shadow-slate-950/40">
+                        <h3 class="flex items-center gap-2 text-base font-semibold text-slate-100">
+                            <x-heroicon-o-information-circle class="h-4 w-4 text-slate-300" />
+                            <span>Adicionar informação</span>
+                        </h3>
 
                         <form method="POST" action="{{ route('support.tickets.comment', $ticket) }}" class="mt-4 space-y-3" enctype="multipart/form-data">
                             @csrf
                             <textarea name="note" rows="4" class="block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400" placeholder="Detalhes adicionais" required></textarea>
                             @include('support.tickets.partials.attachments')
-                            <x-primary-button type="submit">{{ __('Registrar') }}</x-primary-button>
+                            <x-primary-button type="submit">
+                                <x-heroicon-o-plus class="me-2 h-4 w-4" />
+                                {{ __('Registrar') }}
+                            </x-primary-button>
                         </form>
                     </div>
                 </div>

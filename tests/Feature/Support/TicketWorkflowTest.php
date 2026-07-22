@@ -94,6 +94,7 @@ class TicketWorkflowTest extends TestCase
             'description' => 'O servidor e a VPN da unidade caíram após a manutenção da rede.',
             'area_id' => $infrastructure->id,
             'subject_id' => $subject->id,
+            'priority' => Ticket::PRIORITY_HIGH,
         ]);
 
         $response->assertRedirect();
@@ -117,6 +118,7 @@ class TicketWorkflowTest extends TestCase
             'subject_id' => $subject->id,
             'description' => 'A aplicação está apresentando falha ao abrir a tela de login e preciso registrar um teste com imagem.',
             'area_id' => $area->id,
+            'priority' => Ticket::PRIORITY_NORMAL,
             'images' => [
                 UploadedFile::fake()->image('evidencia.jpg')->size(1200),
             ],
@@ -303,6 +305,7 @@ class TicketWorkflowTest extends TestCase
             'area_id' => $serviceDesk->id,
             'current_area' => $serviceDesk->slug,
             'status' => Ticket::STATUS_OPEN,
+            'priority' => Ticket::PRIORITY_NORMAL,
         ], $attributes));
     }
 }

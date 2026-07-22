@@ -64,5 +64,41 @@ class DatabaseSeeder extends Seeder
             ['key' => 'queue_refresh_interval_seconds'],
             ['value' => '15'],
         );
+
+        SystemSetting::query()->firstOrCreate(
+            ['key' => 'dashboard_refresh_interval_seconds'],
+            ['value' => '30'],
+        );
+
+        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as $dayKey) {
+            SystemSetting::query()->firstOrCreate(
+                ['key' => "work_schedule_{$dayKey}_start"],
+                ['value' => '08:00'],
+            );
+            SystemSetting::query()->firstOrCreate(
+                ['key' => "work_schedule_{$dayKey}_end"],
+                ['value' => '17:00'],
+            );
+            SystemSetting::query()->firstOrCreate(
+                ['key' => "work_schedule_{$dayKey}_lunch_start"],
+                ['value' => '12:00'],
+            );
+            SystemSetting::query()->firstOrCreate(
+                ['key' => "work_schedule_{$dayKey}_lunch_end"],
+                ['value' => '13:00'],
+            );
+        }
+
+        foreach ([
+            'low' => 1440,
+            'normal' => 720,
+            'medium' => 240,
+            'high' => 60,
+        ] as $priority => $minutes) {
+            SystemSetting::query()->firstOrCreate(
+                ['key' => "priority_{$priority}_resolution_minutes"],
+                ['value' => (string) $minutes],
+            );
+        }
     }
 }

@@ -7,6 +7,7 @@
             </div>
 
             <a href="{{ route('support.tickets.create') }}" class="inline-flex items-center rounded-md border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25 hover:text-white">
+                <x-heroicon-o-clipboard-document-list class="me-2 h-4 w-4" />
                 {{ __('Novo ticket') }}
             </a>
         </div>

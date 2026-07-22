@@ -7,6 +7,7 @@
             </div>
 
             <a href="{{ route('support.areas.create') }}" class="inline-flex items-center rounded-md border border-cyan-400/30 bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25 hover:text-white">
+                <x-heroicon-o-folder-plus class="me-2 h-4 w-4" />
                 {{ __('Nova área') }}
             </a>
         </div>
@@ -51,13 +52,17 @@
                                     <td class="px-6 py-5 text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             <a href="{{ route('support.areas.edit', $area) }}" class="inline-flex items-center rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-slate-200 transition hover:bg-slate-700">
+                                                <x-heroicon-o-pencil-square class="me-2 h-4 w-4" />
                                                 {{ __('Editar') }}
                                             </a>
 
                                             <form method="POST" action="{{ route('support.areas.destroy', $area) }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <x-secondary-button type="submit">{{ __('Excluir') }}</x-secondary-button>
+                                                <x-secondary-button type="submit">
+                                                    <x-heroicon-o-trash class="me-2 h-4 w-4" />
+                                                    {{ __('Excluir') }}
+                                                </x-secondary-button>
                                             </form>
                                         </div>
                                     </td>

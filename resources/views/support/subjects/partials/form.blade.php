@@ -33,8 +33,12 @@
     @endif
 
     <div class="flex flex-wrap items-center gap-3">
-        <x-primary-button>{{ $submitLabel }}</x-primary-button>
+        <x-primary-button>
+            <x-heroicon-o-check-badge class="me-2 h-4 w-4" />
+            {{ $submitLabel }}
+        </x-primary-button>
         <a href="{{ route('support.subjects.index') }}" class="inline-flex items-center rounded-md border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-200 transition hover:bg-slate-700">
+            <x-heroicon-o-arrow-left class="me-2 h-4 w-4" />
             {{ __('Voltar') }}
         </a>
     </div>

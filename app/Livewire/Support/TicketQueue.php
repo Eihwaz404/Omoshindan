@@ -5,6 +5,7 @@ namespace App\Livewire\Support;
 use App\Models\SupportArea;
 use App\Models\SystemSetting;
 use App\Models\Ticket;
+use App\Support\TicketSlaCalculator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
@@ -45,7 +46,7 @@ class TicketQueue extends Component
         $user = Auth::user();
 
         $tickets = Ticket::query()
-            ->with(['requester', 'assignedTo', 'area'])
+            ->with(['requester', 'assignedTo', 'area', 'events'])
             ->visibleTo($user)
             ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
             ->when($this->area !== '', fn ($query) => $query->where('area_id', $this->area))
@@ -59,6 +60,13 @@ class TicketQueue extends Component
             })
             ->latest()
             ->paginate(12);
+
+        $calculator = app(TicketSlaCalculator::class);
+        $tickets->getCollection()->transform(function (Ticket $ticket) use ($calculator) {
+            $ticket->setAttribute('sla', $calculator->summary($ticket));
+
+            return $ticket;
+        });
 
         return view('livewire.support.ticket-queue', [
             'tickets' => $tickets,

@@ -10,10 +10,12 @@ use App\Models\TicketAttachment;
 use App\Models\Ticket;
 use App\Models\TicketEvent;
 use App\Models\User;
+use App\Support\TicketSlaCalculator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -30,6 +32,7 @@ class TicketController extends Controller
         return view('support.tickets.create', [
             'ticket' => new Ticket([
                 'status' => Ticket::STATUS_OPEN,
+                'priority' => Ticket::PRIORITY_NORMAL,
             ]),
             'areas' => SupportArea::query()->active()->orderBy('name')->get(),
             'subjects' => SupportSubject::query()
@@ -37,6 +40,7 @@ class TicketController extends Controller
                 ->orderBy('category')
                 ->orderBy('name')
                 ->get(),
+            'priorities' => config('support.priorities', []),
             'descriptionMinLength' => StoreTicketRequest::DESCRIPTION_MIN_LENGTH,
             'descriptionMaxLength' => StoreTicketRequest::DESCRIPTION_MAX_LENGTH,
             'statuses' => config('support.statuses', []),
@@ -61,6 +65,9 @@ class TicketController extends Controller
                 'area_id' => $area->id,
                 'current_area' => $area->slug,
                 'status' => Ticket::STATUS_OPEN,
+                ... (Schema::hasColumn('tickets', 'priority')
+                    ? ['priority' => $request->string('priority')]
+                    : []),
             ]);
 
             $this->recordEvent(
@@ -87,6 +94,7 @@ class TicketController extends Controller
         abort_unless($ticket->isVisibleTo($request->user()), 403);
 
         $ticket->load(['requester', 'assignedTo', 'area', 'events.actor', 'events.fromArea', 'events.toArea', 'events.attachments.uploader']);
+        $ticket->setAttribute('sla', app(TicketSlaCalculator::class)->summary($ticket));
 
         return view('support.tickets.show', [
             'ticket' => $ticket,
@@ -96,6 +104,7 @@ class TicketController extends Controller
                 ->orderBy('category')
                 ->orderBy('name')
                 ->get(),
+            'priorities' => config('support.priorities', []),
             'statuses' => config('support.statuses', []),
             'isTechnical' => $request->user()->isTechnical(),
             'isAssignedToCurrentUser' => $ticket->assigned_to_id === $request->user()->id,

@@ -13,7 +13,7 @@
             @click.prevent="if (fields < maxFields) fields++"
             :disabled="fields >= maxFields"
         >
-            <x-heroicon-o-plus class="h-4 w-4" />
+            <x-heroicon-o-paper-clip class="h-4 w-4" />
             <span>{{ __('Adicionar imagem') }}</span>
         </button>
     </div>

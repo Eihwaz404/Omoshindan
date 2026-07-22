@@ -90,6 +90,21 @@ return [
         'closed' => 'Fechado',
     ],
 
+    'priorities' => [
+        'low' => [
+            'label' => 'Baixo',
+        ],
+        'normal' => [
+            'label' => 'Normal',
+        ],
+        'medium' => [
+            'label' => 'Médio',
+        ],
+        'high' => [
+            'label' => 'Alto',
+        ],
+    ],
+
     'event_types' => [
         'created' => 'Ticket aberto',
         'comment' => 'Nova informação',

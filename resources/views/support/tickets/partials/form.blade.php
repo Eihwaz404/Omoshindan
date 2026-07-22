@@ -7,7 +7,10 @@
     }"
 >
     <div>
-        <x-input-label for="subject_id" value="Assunto" />
+        <label for="subject_id" class="mb-1 flex items-center gap-2 text-sm font-medium text-slate-200">
+            <x-heroicon-o-clipboard-document-list class="h-4 w-4 text-cyan-300" />
+            <span>Assunto</span>
+        </label>
         <select
             id="subject_id"
             name="subject_id"
@@ -27,7 +30,10 @@
     </div>
 
     <div>
-        <x-input-label for="area_id" value="Área de suporte" />
+        <label for="area_id" class="mb-1 flex items-center gap-2 text-sm font-medium text-slate-200">
+            <x-heroicon-o-building-office-2 class="h-4 w-4 text-emerald-300" />
+            <span>Área de suporte</span>
+        </label>
         <select
             id="area_id"
             name="area_id"
@@ -46,7 +52,31 @@
     </div>
 
     <div>
-        <x-input-label for="description" value="Descrição do problema" />
+        <label for="priority" class="mb-1 flex items-center gap-2 text-sm font-medium text-slate-200">
+            <x-heroicon-o-bolt class="h-4 w-4 text-amber-300" />
+            <span>Prioridade</span>
+        </label>
+        <select
+            id="priority"
+            name="priority"
+            class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950/80 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
+            required
+        >
+            @foreach ($priorities as $priorityKey => $priority)
+                <option value="{{ $priorityKey }}" @selected((string) old('priority', $ticket->priority ?? \App\Models\Ticket::PRIORITY_NORMAL) === (string) $priorityKey)>
+                    {{ $priority['label'] }}
+                </option>
+            @endforeach
+        </select>
+        <p class="mt-2 text-xs leading-5 text-slate-500">A prioridade ajuda a acompanhar o prazo esperado de solução do chamado.</p>
+        <x-input-error class="mt-2" :messages="$errors->get('priority')" />
+    </div>
+
+    <div>
+        <label for="description" class="mb-1 flex items-center gap-2 text-sm font-medium text-slate-200">
+            <x-heroicon-o-document-text class="h-4 w-4 text-slate-300" />
+            <span>Descrição do problema</span>
+        </label>
         <textarea
             id="description"
             name="description"
