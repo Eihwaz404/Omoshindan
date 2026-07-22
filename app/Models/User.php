@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -91,5 +92,13 @@ class User extends Authenticatable
     public function supportAreas(): BelongsToMany
     {
         return $this->belongsToMany(SupportArea::class, 'support_area_user', 'user_id', 'support_area_id')->withTimestamps();
+    }
+
+    /**
+     * Tickets currently assigned to this user.
+     */
+    public function assignedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'assigned_to_id');
     }
 }
