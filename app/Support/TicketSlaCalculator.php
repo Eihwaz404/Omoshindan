@@ -26,13 +26,14 @@ class TicketSlaCalculator
      *     priority_minutes: int,
      *     elapsed_minutes: int,
      *     remaining_minutes: int,
-     *     progress_percent: int,
-     *     display_text: string,
-     *     tone: string,
-     *     is_paused: bool,
-     *     is_overdue: bool,
-     *     is_complete: bool
-     * }
+ *     progress_percent: int,
+ *     display_text: string,
+ *     tone: string,
+ *     tone_color: string,
+ *     is_paused: bool,
+ *     is_overdue: bool,
+ *     is_complete: bool
+ * }
      */
     public function summary(Ticket $ticket, ?CarbonInterface $asOf = null): array
     {
@@ -55,6 +56,7 @@ class TicketSlaCalculator
             'progress_percent' => $progressPercent,
             'display_text' => $this->displayText($remainingMinutes, $overdueMinutes, $isPaused, $isComplete, $isOverdue),
             'tone' => $this->tone($progressPercent, $isPaused, $isOverdue, $isComplete),
+            'tone_color' => $this->toneColor($progressPercent, $isPaused, $isOverdue, $isComplete),
             'is_paused' => $isPaused,
             'is_overdue' => $isOverdue,
             'is_complete' => $isComplete,
@@ -261,6 +263,28 @@ class TicketSlaCalculator
             $progressPercent >= 75 => 'bg-orange-500',
             $progressPercent >= 50 => 'bg-amber-400',
             default => 'bg-emerald-500',
+        };
+    }
+
+    private function toneColor(int $progressPercent, bool $isPaused, bool $isOverdue, bool $isComplete): string
+    {
+        if ($isComplete) {
+            return '#10b981';
+        }
+
+        if ($isPaused) {
+            return '#64748b';
+        }
+
+        if ($isOverdue) {
+            return '#ef4444';
+        }
+
+        return match (true) {
+            $progressPercent >= 90 => '#ef4444',
+            $progressPercent >= 75 => '#f97316',
+            $progressPercent >= 50 => '#f59e0b',
+            default => '#22c55e',
         };
     }
 

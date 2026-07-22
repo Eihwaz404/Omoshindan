@@ -100,6 +100,16 @@ class Ticket extends Model
         return config('support.priorities.'.$this->priority.'.label', $this->priority ?? '-');
     }
 
+    public function getPriorityBadgeClassesAttribute(): string
+    {
+        return config('support.priorities.'.$this->priority.'.badge', 'border-slate-700 bg-slate-800 text-slate-200');
+    }
+
+    public function getPriorityIconClassesAttribute(): string
+    {
+        return config('support.priorities.'.$this->priority.'.icon', 'text-slate-300');
+    }
+
     public function getAreaLabelAttribute(): string
     {
         return $this->area?->name ?? $this->current_area ?? '-';

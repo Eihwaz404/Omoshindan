@@ -114,13 +114,25 @@
                                 <div class="text-slate-500">{{ $ticket->requester?->email }}</div>
                             </td>
                             <td class="px-6 py-5 text-sm text-slate-300">{{ $ticket->subject_label }}</td>
-                            <td class="px-6 py-5 text-sm text-slate-300">{{ $ticket->priority_label }}</td>
+                            <td class="px-6 py-5">
+                                <span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold {{ $ticket->priority_badge_classes }}">
+                                    <x-heroicon-o-bolt class="me-2 h-3.5 w-3.5 {{ $ticket->priority_icon_classes }}" />
+                                    {{ $ticket->priority_label }}
+                                </span>
+                            </td>
                             @php($sla = $ticket->getAttribute('sla') ?? $ticket->slaSummary())
                             <td class="px-6 py-5">
                                 <div class="space-y-2">
                                     <div class="text-sm font-medium text-slate-100">{{ $sla['display_text'] }}</div>
                                     <div class="h-2 overflow-hidden rounded-full bg-slate-800">
-                                        <div class="h-full rounded-full transition-all duration-300 {{ $sla['tone'] }}" style="width: {{ $sla['progress_percent'] }}%"></div>
+                                        <div
+                                            class="relative h-full rounded-full transition-all duration-300"
+                                            style="width: {{ $sla['progress_percent'] }}%; background-color: {{ $sla['tone_color'] }}; box-shadow: 0 0 10px {{ $sla['tone_color'] }}66;"
+                                        >
+                                            @if ($sla['progress_percent'] > 0)
+                                                <span class="absolute -right-1 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-white/20" style="background-color: {{ $sla['tone_color'] }}"></span>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="text-xs text-slate-500">
                                         {{ $sla['elapsed_minutes'] }} / {{ $sla['priority_minutes'] }} min

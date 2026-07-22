@@ -262,6 +262,28 @@ class TicketWorkflowTest extends TestCase
         $this->assertNull($ticket->assigned_to_id);
     }
 
+    public function test_priority_badge_uses_color_for_high_priority_tickets(): void
+    {
+        $area = $this->createArea('service_desk', 'Service Desk');
+        $subject = $this->createSubject(1, 'Acesso ao sistema');
+        $requester = User::factory()->create();
+
+        $ticket = $this->createTicket($requester, [
+            'area_id' => $area->id,
+            'current_area' => $area->slug,
+            'subject_id' => $subject->id,
+            'priority' => Ticket::PRIORITY_HIGH,
+            'status' => Ticket::STATUS_OPEN,
+        ]);
+
+        $this->actingAs($requester)
+            ->get(route('support.tickets.show', $ticket))
+            ->assertOk()
+            ->assertSee('border-rose-400/20', false)
+            ->assertSee('bg-rose-500/10', false)
+            ->assertSee('Alto');
+    }
+
     private function createArea(string $slug, string $name): SupportArea
     {
         return SupportArea::updateOrCreate(

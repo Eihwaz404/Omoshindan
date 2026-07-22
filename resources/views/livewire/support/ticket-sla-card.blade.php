@@ -17,7 +17,14 @@
     </div>
 
     <div class="mt-5 h-3 overflow-hidden rounded-full bg-slate-800">
-        <div class="h-full rounded-full transition-all duration-300 {{ $sla['tone'] }}" style="width: {{ $sla['progress_percent'] }}%"></div>
+        <div
+            class="relative h-full rounded-full transition-all duration-300"
+            style="width: {{ $sla['progress_percent'] }}%; background-color: {{ $sla['tone_color'] }}; box-shadow: 0 0 12px {{ $sla['tone_color'] }}66;"
+        >
+            @if ($sla['progress_percent'] > 0)
+                <span class="absolute -right-1 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-white/20" style="background-color: {{ $sla['tone_color'] }}"></span>
+            @endif
+        </div>
     </div>
 
     <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-400">

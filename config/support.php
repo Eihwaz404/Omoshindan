@@ -93,15 +93,23 @@ return [
     'priorities' => [
         'low' => [
             'label' => 'Baixo',
+            'badge' => 'border-emerald-400/20 bg-emerald-500/10 text-emerald-100',
+            'icon' => 'text-emerald-300',
         ],
         'normal' => [
             'label' => 'Normal',
+            'badge' => 'border-amber-400/20 bg-amber-500/10 text-amber-100',
+            'icon' => 'text-amber-300',
         ],
         'medium' => [
             'label' => 'Médio',
+            'badge' => 'border-orange-400/20 bg-orange-500/10 text-orange-100',
+            'icon' => 'text-orange-300',
         ],
         'high' => [
             'label' => 'Alto',
+            'badge' => 'border-rose-400/20 bg-rose-500/10 text-rose-100',
+            'icon' => 'text-rose-300',
         ],
     ],
 

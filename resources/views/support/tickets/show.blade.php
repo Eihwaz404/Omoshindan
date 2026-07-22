@@ -11,8 +11,8 @@
                     <x-heroicon-o-rectangle-stack class="me-2 h-3.5 w-3.5" />
                     {{ $ticket->status_label }}
                 </span>
-                <span class="inline-flex items-center rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100">
-                    <x-heroicon-o-bolt class="me-2 h-3.5 w-3.5" />
+                <span class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold {{ $ticket->priority_badge_classes }}">
+                    <x-heroicon-o-bolt class="me-2 h-3.5 w-3.5 {{ $ticket->priority_icon_classes }}" />
                     {{ $ticket->priority_label }}
                 </span>
                 <span class="inline-flex items-center rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-200">

@@ -42,6 +42,7 @@ class TicketSlaCardTest extends TestCase
             ->assertOk()
             ->assertSee('wire:poll.12s', false)
             ->assertSee('Tempo restante para concluir o chamado')
-            ->assertSee('min restantes');
+            ->assertSee('min restantes')
+            ->assertSee('#22c55e', false);
     }
 }
